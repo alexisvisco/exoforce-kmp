@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+    <string name="app_name">Exoforce</string>
+
+<!--    onboarding-->
+    <string name="onboarding_welcome_title">Rejoignez\nExoforce</string>
+    <string name="onboarding_welcome_subtitle">Connecte-toi avec ton numéro de téléphone pour continuer.</string>
+    <string name="onboarding_welcome_cta">Commencer</string>
+
+
+
+    <string name="onboarding_phone_number_title">Entre ton numéro de téléphone</string>
+    <string name="onboarding_phone_number_subtitle">Nous enverrons un code de vérification par SMS.</string>
+    <string name="onboarding_phone_number_example">+33 6 00 01 02 03</string>
+    <string name="onboarding_phone_number_cta">Suivant</string>
+
+    <string name="onboarding_verification_code_title">Entre le code de vérification</string>
+    <string name="onboarding_verification_code_subtitle">Nous avons envoyé un code à 4 chiffres à ton numéro de téléphone.</string>
+    <string name="onboarding_verification_code_cta">Vérifier</string>
+
+    <string name="onboarding_name_title">Comment devrions-nous t'appeler?</string>
+    <string name="onboarding_name_subtitle">Tu pourras toujours le modifier plus tard.</string>
+    <string name="onboarding_name_placeholder">Rémi</string>
+    <string name="onboarding_name_cta">Continuer</string>
+
+    <string name="onboarding_weight_title">Quel est ton poids?</string>
+    <string name="onboarding_weight_subtitle">Cela nous aide à personnaliser ton expérience.</string>
+    <string name="onboarding_weight_placeholder">70</string>
+    <string name="onboarding_weight_cta">Continuer</string>
+
+    <string name="onboarding_height_title">Quelle est ta taille?</string>
+    <string name="onboarding_height_subtitle">Promis après c'est fini !</string>
+    <string name="onboarding_height_placeholder">175</string>
+    <string name="onboarding_height_cta">Continuer</string>
+
+
+<!--    Errors from api-->
+    <string name="api_err_code_unknown">Une erreur inconnu est survenue.</string>
+    <string name="api_err_code_invalid_phone_number">Le numéro de téléphone est invalide.</string>
+    <string name="api_err_code_invalid_user_code">Le code est invalide.</string>
+</resources>
