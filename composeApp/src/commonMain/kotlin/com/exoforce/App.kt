@@ -12,7 +12,7 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.exoforce.component.RootComponent
 import com.exoforce.core.theme.AppTheme
-import com.exoforce.presentation.screen.HomeScreen
+import com.exoforce.home.ui.HomeScreen
 import com.exoforce.presentation.screen.onboarding.OnboardingScreen
 
 @Composable

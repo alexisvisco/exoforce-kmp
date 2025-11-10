@@ -6,6 +6,7 @@ import com.arkivanov.decompose.value.Value
 import com.exoforce.core.utils.ComponentState
 import com.exoforce.core.utils.clearError
 import com.exoforce.core.utils.executeWithErrorHandling
+import com.exoforce.data.domain.User
 import com.exoforce.data.repository.AuthRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +35,7 @@ class StepVerifyPhoneComponent(
                     code = code.value
                 )
             },
-            onSuccess = { onNext() }
+            onSuccess = { _: User -> onNext() }
         )
     }
 

@@ -17,6 +17,8 @@ import kotlinx.serialization.encoding.Encoder
 @Serializable(with = DayMonthYearSerializer::class)
 data class DayMonthYear(val date: LocalDate) {
 
+
+
     override fun toString(): String = date.toString() // Returns YYYY-MM-DD
 
     fun isZero(): Boolean = date.year == 1970 && date.monthNumber == 1 && date.dayOfMonth == 1

@@ -1,6 +1,6 @@
 package com.exoforce.data.remote
 
-import com.exoforce.data.remote.types.RemotePrivateUser
+import com.exoforce.data.remote.types.RemoteUser
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -12,7 +12,7 @@ import kotlinx.serialization.Serializable
 class UserClient(private val httpClient: HttpClient) {
     @Serializable
     data class MeResponse(
-        val user: RemotePrivateUser
+        val user: RemoteUser
     )
 
     suspend fun me(): MeResponse {
@@ -29,7 +29,7 @@ class UserClient(private val httpClient: HttpClient) {
     )
     @Serializable
     data class UpdateMeResponse(
-        val user: RemotePrivateUser
+        val user: RemoteUser
     )
     suspend fun updateMe(req: UpdateMeRequest): UpdateMeResponse {
         return httpClient.put("/v1/users/@me") {

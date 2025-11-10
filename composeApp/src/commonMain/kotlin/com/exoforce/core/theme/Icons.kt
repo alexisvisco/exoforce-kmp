@@ -4,9 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.painter.Painter
 import exoforce.composeapp.generated.resources.Res
 import exoforce.composeapp.generated.resources.icon_arrow_backward
+import exoforce.composeapp.generated.resources.icon_bolt_filled
+import exoforce.composeapp.generated.resources.icon_clock
 import exoforce.composeapp.generated.resources.icon_eye_filled
 import exoforce.composeapp.generated.resources.icon_eye_slash_filled
+import exoforce.composeapp.generated.resources.icon_repeat
+import exoforce.composeapp.generated.resources.icon_ruler
+import exoforce.composeapp.generated.resources.icon_run
+import exoforce.composeapp.generated.resources.icon_weight
 import exoforce.composeapp.generated.resources.icon_xmark_circle_filled
+import exoforce.composeapp.generated.resources.icon_zzz
 import org.jetbrains.compose.resources.painterResource
 
 object Icons {
@@ -23,4 +30,25 @@ object Icons {
     val ArrowBackward: Painter
         @Composable get() = painterResource(Res.drawable.icon_arrow_backward)
 
+    val BoltFilled: Painter
+        @Composable get() = painterResource(Res.drawable.icon_bolt_filled)
+
+    val Zzz: Painter
+        @Composable get() = painterResource(Res.drawable.icon_zzz)
+
+    val Run: Painter
+        @Composable get() = painterResource(Res.drawable.icon_run)
+
+    val Weight: Painter
+        @Composable get() = painterResource(Res.drawable.icon_weight)
+
+    val Ruler: Painter
+        @Composable get() = painterResource(Res.drawable.icon_ruler)
+
+    val Repeat: Painter
+        @Composable get() = painterResource(Res.drawable.icon_repeat)
+
+
+    val Clock: Painter
+        @Composable get() = painterResource(Res.drawable.icon_clock)
 }

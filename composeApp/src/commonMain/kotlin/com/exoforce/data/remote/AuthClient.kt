@@ -1,6 +1,6 @@
 package com.exoforce.data.remote
 
-import com.exoforce.data.remote.types.RemotePrivateUser
+import com.exoforce.data.remote.types.RemoteUser
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.post
@@ -38,7 +38,7 @@ class AuthClient(private val httpClient: HttpClient) {
 
     @Serializable
     data class VerifyPhoneNumberCodeResponse(
-        val user: RemotePrivateUser
+        val user: RemoteUser
     )
 
     suspend fun verifyPhoneNumberCode(

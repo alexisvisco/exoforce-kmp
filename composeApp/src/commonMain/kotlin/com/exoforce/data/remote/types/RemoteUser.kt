@@ -1,11 +1,12 @@
 package com.exoforce.data.remote.types
 
+import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 
 @Serializable
-data class RemotePrivateUser (
+data class RemoteUser (
     val id: String,
     val email: String? = null,
     val name: String? = null,
@@ -23,5 +24,16 @@ data class RemotePrivateUser (
     val accessToken: String,
 
     @SerialName("created_at")
-    val createdAt: String,
+    val createdAt: Instant,
+
+    @SerialName("updated_at")
+    val updatedAt: Instant,
+
+    @SerialName("email_verified_at")
+    val emailVerifiedAt: Instant? = null,
+
+    @SerialName("phone_number_verified_at")
+    val phoneNumberVerifiedAt: Instant? = null,
+
+    val admin: Boolean = false,
 )

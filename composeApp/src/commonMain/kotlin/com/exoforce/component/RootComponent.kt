@@ -1,5 +1,6 @@
 package com.exoforce.component
 
+import HomeComponent
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
@@ -8,6 +9,8 @@ import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.arkivanov.decompose.value.Value
 import com.exoforce.component.onboarding.OnboardingComponent
 import com.exoforce.data.repository.AuthRepository
+import com.exoforce.data.repository.UserRepository
+import com.exoforce.data.repository.WorkoutRepository
 import kotlinx.serialization.Serializable
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -17,6 +20,9 @@ class RootComponent(
 ) : ComponentContext by componentContext, KoinComponent {
     
     private val authRepository: AuthRepository by inject()
+    private val userRepository: UserRepository by inject()
+
+    private val workoutRepository: WorkoutRepository by inject()
     
     private val navigation = StackNavigation<Config>()
     
@@ -38,7 +44,7 @@ class RootComponent(
                 )
             )
             Config.Home -> Child.Home(
-                HomeComponent(componentContext)
+                HomeComponent(componentContext, userRepository, workoutRepository)
             )
         }
     

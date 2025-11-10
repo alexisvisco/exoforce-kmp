@@ -33,7 +33,7 @@ class StepPhoneComponent(
             coroutineScope = coroutineScope,
             state = _state,
             block = { authRepository.login(phoneNumber.value) },
-            onSuccess = { onNext(phoneNumber.value) }
+            onSuccess = { _: Unit -> onNext(phoneNumber.value) }
         )
     }
 

@@ -6,6 +6,7 @@ import com.arkivanov.decompose.value.Value
 import com.exoforce.core.utils.ComponentState
 import com.exoforce.core.utils.clearError
 import com.exoforce.core.utils.executeWithErrorHandling
+import com.exoforce.data.domain.User
 import com.exoforce.data.repository.UserRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,12 +28,14 @@ class StepHeightComponent(
         executeWithErrorHandling(
             coroutineScope = coroutineScope,
             state = _state,
-            block = { userRepository.updateMe(
-                heightCm = height.value.toFloatOrNull(),
-                name = null,
-                weightKg = null,
-            ) },
-            onSuccess = { onNext() }
+            block = {
+                userRepository.updateMe(
+                    heightCm = height.value.toFloatOrNull(),
+                    name = null,
+                    weightKg = null,
+                )
+            },
+            onSuccess = { _: User -> onNext() }
         )
     }
 

@@ -10,5 +10,5 @@ data class Program (
     val updatedAt: Instant,
 
     val workouts: List<Workout> = emptyList(),
-    val user: PrivateUser? = null
+    val user: User? = null
 )

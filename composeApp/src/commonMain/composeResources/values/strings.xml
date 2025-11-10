@@ -33,9 +33,96 @@
     <string name="onboarding_height_placeholder">175</string>
     <string name="onboarding_height_cta">Continuer</string>
 
+<!-- Home screen -->
+    <string name="homescreen_goodmorning">Bonjour</string>
+    <string name="homescreen_goodevening">Bonsoir</string>
+    <string name="homescreen_no_exercises">Aucun exercice de prévu</string>
 
 <!--    Errors from api-->
     <string name="api_err_code_unknown">Une erreur inconnu est survenue.</string>
     <string name="api_err_code_invalid_phone_number">Le numéro de téléphone est invalide.</string>
     <string name="api_err_code_invalid_user_code">Le code est invalide.</string>
+
+
+<!--    exercise classification types -->
+    <string name="exercise_classification_kind_exercise_type">Type d'exercice</string>
+    <string name="exercise_classification_kind_major_muscle">Muscle principal</string>
+    <string name="exercise_classification_kind_functional_chain">Chaîne fonctionnelle</string>
+    <string name="exercise_classification_kind_specific_zone">Zone spécifique</string>
+    <string name="exercise_classification_kind_specific_capacity">Capacité spécifique</string>
+    <string name="exercise_classification_kind_global_system">Système global</string>
+
+    <!-- Types d'exercices (exercise_type) -->
+    <string name="exercise_classification_exercise_type_cardiovascular_endurance">Endurance cardiovasculaire</string>
+    <string name="exercise_classification_exercise_type_strength_training">Musculation</string>
+    <string name="exercise_classification_exercise_type_muscular_endurance">Endurance musculaire</string>
+    <string name="exercise_classification_exercise_type_power">Puissance</string>
+    <string name="exercise_classification_exercise_type_flexibility">Souplesse</string>
+    <string name="exercise_classification_exercise_type_mobility">Mobilité</string>
+    <string name="exercise_classification_exercise_type_balance_coordination">Équilibre et coordination</string>
+    <string name="exercise_classification_exercise_type_hiit">HIIT</string>
+    <string name="exercise_classification_exercise_type_core_stability">Stabilité du tronc</string>
+    <string name="exercise_classification_exercise_type_plyometric">Pliométrie</string>
+
+    <!-- Muscles principaux (major_muscle) -->
+    <string name="exercise_classification_major_muscle_pectorals">Pectoraux</string>
+    <string name="exercise_classification_major_muscle_back">Dos</string>
+    <string name="exercise_classification_major_muscle_shoulders">Épaules</string>
+    <string name="exercise_classification_major_muscle_arms">Bras</string>
+    <string name="exercise_classification_major_muscle_quadriceps">Quadriceps</string>
+    <string name="exercise_classification_major_muscle_hamstrings">Ischio-jambiers</string>
+    <string name="exercise_classification_major_muscle_glutes">Fessiers</string>
+    <string name="exercise_classification_major_muscle_calves">Mollets</string>
+    <string name="exercise_classification_major_muscle_abdominals">Abdominaux</string>
+    <string name="exercise_classification_major_muscle_lower_back">Lombaires</string>
+
+    <!-- Zones spécifiques (specific_zone) -->
+    <string name="exercise_classification_specific_zone_forearms">Avant-bras</string>
+    <string name="exercise_classification_specific_zone_fingers">Doigts</string>
+    <string name="exercise_classification_specific_zone_wrists">Poignets</string>
+    <string name="exercise_classification_specific_zone_neck">Cou</string>
+    <string name="exercise_classification_specific_zone_rotator_cuff">Coiffe des rotateurs</string>
+    <string name="exercise_classification_specific_zone_hip_flexors">Fléchisseurs de hanche</string>
+    <string name="exercise_classification_specific_zone_adductors">Adducteurs</string>
+    <string name="exercise_classification_specific_zone_abductors">Abducteurs</string>
+    <string name="exercise_classification_specific_zone_shins">Tibias</string>
+    <string name="exercise_classification_specific_zone_peroneals">Péroniers</string>
+    <string name="exercise_classification_specific_zone_intrinsic_foot_muscles">Muscles intrinsèques du pied</string>
+    <string name="exercise_classification_specific_zone_pelvic_floor">Plancher pelvien</string>
+    <string name="exercise_classification_specific_zone_scapula_stabilizers">Stabilisateurs de l'omoplate</string>
+    <string name="exercise_classification_specific_zone_intercostals">Intercostaux</string>
+    <string name="exercise_classification_specific_zone_spinal_erectors">Érecteurs du rachis</string>
+
+    <!-- Chaînes fonctionnelles (functional_chain) -->
+    <string name="exercise_classification_functional_chain_posterior_chain">Chaîne postérieure</string>
+    <string name="exercise_classification_functional_chain_anterior_chain">Chaîne antérieure</string>
+    <string name="exercise_classification_functional_chain_cross_chains">Chaînes croisées</string>
+    <string name="exercise_classification_functional_chain_core_belt">Ceinture abdominale</string>
+    <string name="exercise_classification_functional_chain_shoulder_girdle">Ceinture scapulaire</string>
+    <string name="exercise_classification_functional_chain_pelvic_girdle">Ceinture pelvienne</string>
+
+    <!-- Capacités spécifiques (specific_capacity) -->
+    <string name="exercise_classification_specific_capacity_proprioception">Proprioception</string>
+    <string name="exercise_classification_specific_capacity_leg_explosiveness">Explosivité des jambes</string>
+    <string name="exercise_classification_specific_capacity_arm_explosiveness">Explosivité des bras</string>
+    <string name="exercise_classification_specific_capacity_localized_muscular_endurance">Endurance musculaire localisée</string>
+    <string name="exercise_classification_specific_capacity_isometric_strength">Force isométrique</string>
+    <string name="exercise_classification_specific_capacity_eccentric_strength">Force excentrique</string>
+    <string name="exercise_classification_specific_capacity_concentric_strength">Force concentrique</string>
+    <string name="exercise_classification_specific_capacity_joint_stability">Stabilité articulaire</string>
+    <string name="exercise_classification_specific_capacity_trunk_rotation">Rotation du tronc</string>
+    <string name="exercise_classification_specific_capacity_anti_rotation">Anti-rotation</string>
+    <string name="exercise_classification_specific_capacity_lateral_trunk_flexion">Flexion latérale du tronc</string>
+
+    <!-- Systèmes globaux (global_system) -->
+    <string name="exercise_classification_global_system_aerobic_capacity">Capacité aérobie</string>
+    <string name="exercise_classification_global_system_anaerobic_capacity">Capacité anaérobie</string>
+    <string name="exercise_classification_global_system_vo2_max">VO2 max</string>
+    <string name="exercise_classification_global_system_lactate_threshold">Seuil lactique</string>
+    <string name="exercise_classification_global_system_active_recovery">Récupération active</string>
+    <string name="exercise_classification_global_system_intermuscular_coordination">Coordination intermusculaire</string>
+    <string name="exercise_classification_global_system_bilateral_synchronization">Synchronisation bilatérale</string>
+    <string name="exercise_classification_global_system_segmental_dissociation">Dissociation segmentaire</string>
+
+
 </resources>
