@@ -13,6 +13,7 @@ import com.exoforce.data.remote.WorkoutClient
 import com.exoforce.data.repository.AuthRepository
 import com.exoforce.data.repository.UserRepository
 import com.exoforce.data.repository.WorkoutRepository
+import com.exoforce.data.repository.WorkoutSessionRepository
 import com.russhwolf.settings.Settings
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -34,6 +35,7 @@ val appModule = module {
     singleOf(::UserRepository)
     singleOf(::AuthRepository)
     singleOf(::WorkoutRepository)
+    singleOf(::WorkoutSessionRepository)
 
     single { get<Database>().userDao() }
     single { get<Database>().workoutDao() }

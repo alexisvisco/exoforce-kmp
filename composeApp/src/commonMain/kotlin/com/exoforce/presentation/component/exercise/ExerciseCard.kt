@@ -285,7 +285,7 @@ fun ExerciseItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        painter = Icons.Zzz,
+                        painter = Icons.Hourglass,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.size(16.dp)

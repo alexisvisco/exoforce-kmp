@@ -19,7 +19,7 @@ import com.exoforce.core.utils.InstantConverters
         ExerciseClassificationCrossRef::class,
         WorkoutSessionEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 @ConstructedBy(DatabaseConstructor::class)

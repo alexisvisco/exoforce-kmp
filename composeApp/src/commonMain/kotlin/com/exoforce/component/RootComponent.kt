@@ -7,10 +7,13 @@ import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.arkivanov.decompose.value.Value
+import com.arkivanov.decompose.router.stack.pop
+import com.arkivanov.decompose.router.stack.push
 import com.exoforce.component.onboarding.OnboardingComponent
 import com.exoforce.data.repository.AuthRepository
 import com.exoforce.data.repository.UserRepository
 import com.exoforce.data.repository.WorkoutRepository
+import com.exoforce.data.repository.WorkoutSessionRepository
 import kotlinx.serialization.Serializable
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -18,14 +21,14 @@ import org.koin.core.component.inject
 class RootComponent(
     componentContext: ComponentContext
 ) : ComponentContext by componentContext, KoinComponent {
-    
+
     private val authRepository: AuthRepository by inject()
     private val userRepository: UserRepository by inject()
-
     private val workoutRepository: WorkoutRepository by inject()
-    
+    private val workoutSessionRepository: WorkoutSessionRepository by inject()
+
     private val navigation = StackNavigation<Config>()
-    
+
     val stack: Value<ChildStack<*, Child>> = childStack(
         source = navigation,
         serializer = Config.serializer(),
@@ -34,7 +37,7 @@ class RootComponent(
         handleBackButton = true,
         childFactory = ::child
     )
-    
+
     private fun child(config: Config, componentContext: ComponentContext): Child =
         when (config) {
             Config.Onboarding -> Child.Onboarding(
@@ -43,22 +46,45 @@ class RootComponent(
                     onComplete = { navigation.replaceCurrent(Config.Home) }
                 )
             )
+
             Config.Home -> Child.Home(
-                HomeComponent(componentContext, userRepository, workoutRepository)
+                HomeComponent(
+                    componentContext = componentContext,
+                    userRepository = userRepository,
+                    workoutRepository = workoutRepository,
+                    workoutSessionRepository = workoutSessionRepository,
+                    onNavigateToWorkoutSession = { workoutId ->
+                        navigation.push(Config.WorkoutSession(workoutId))
+                    }
+                )
+            )
+
+            is Config.WorkoutSession -> Child.WorkoutSession(
+                WorkoutSessionComponent(
+                    componentContext = componentContext,
+                    workoutId = config.workoutId,
+                    workoutRepository = workoutRepository,
+                    workoutSessionRepository = workoutSessionRepository,
+                    onBack = { navigation.pop() }
+                )
             )
         }
-    
+
     sealed class Child {
         data class Onboarding(val component: OnboardingComponent) : Child()
         data class Home(val component: HomeComponent) : Child()
+        data class WorkoutSession(val component: WorkoutSessionComponent) : Child()
     }
-    
+
     @Serializable
     sealed class Config {
         @Serializable
         data object Onboarding : Config()
-        
+
         @Serializable
         data object Home : Config()
+
+        @Serializable
+        data class WorkoutSession(val workoutId: String) : Config()
     }
 }

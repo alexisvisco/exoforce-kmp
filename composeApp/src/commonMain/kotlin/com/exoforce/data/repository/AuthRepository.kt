@@ -40,6 +40,9 @@ class AuthRepository(
     }
 
     fun isLoggedIn(): Boolean {
+//        runBlocking {
+//            logout()
+//        }
         return storage.getToken() != null
     }
 }

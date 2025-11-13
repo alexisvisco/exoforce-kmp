@@ -8,12 +8,14 @@ import exoforce.composeapp.generated.resources.icon_bolt_filled
 import exoforce.composeapp.generated.resources.icon_clock
 import exoforce.composeapp.generated.resources.icon_eye_filled
 import exoforce.composeapp.generated.resources.icon_eye_slash_filled
+import exoforce.composeapp.generated.resources.icon_hourglass
+import exoforce.composeapp.generated.resources.icon_pause_circle_filled
+import exoforce.composeapp.generated.resources.icon_play_circle_filled
 import exoforce.composeapp.generated.resources.icon_repeat
 import exoforce.composeapp.generated.resources.icon_ruler
 import exoforce.composeapp.generated.resources.icon_run
 import exoforce.composeapp.generated.resources.icon_weight
 import exoforce.composeapp.generated.resources.icon_xmark_circle_filled
-import exoforce.composeapp.generated.resources.icon_zzz
 import org.jetbrains.compose.resources.painterResource
 
 object Icons {
@@ -33,8 +35,8 @@ object Icons {
     val BoltFilled: Painter
         @Composable get() = painterResource(Res.drawable.icon_bolt_filled)
 
-    val Zzz: Painter
-        @Composable get() = painterResource(Res.drawable.icon_zzz)
+    val Hourglass: Painter
+        @Composable get() = painterResource(Res.drawable.icon_hourglass)
 
     val Run: Painter
         @Composable get() = painterResource(Res.drawable.icon_run)
@@ -51,4 +53,10 @@ object Icons {
 
     val Clock: Painter
         @Composable get() = painterResource(Res.drawable.icon_clock)
+
+    val PlayCircleFilled: Painter
+        @Composable get() = painterResource(Res.drawable.icon_play_circle_filled)
+
+    val PauseCircleFilled: Painter
+        @Composable get() = painterResource(Res.drawable.icon_pause_circle_filled)
 }

@@ -2,14 +2,16 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
-import com.exoforce.core.utils.ComponentState
-import com.exoforce.core.utils.executeWithErrorHandling
+import com.exoforce.component.helpers.DataHolder
 import com.exoforce.data.domain.User
 import com.exoforce.data.domain.Workout
+import com.exoforce.data.domain.WorkoutSession
 import com.exoforce.data.repository.UserRepository
 import com.exoforce.data.repository.WorkoutRepository
+import com.exoforce.data.repository.WorkoutSessionRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -17,6 +19,8 @@ class HomeComponent(
     componentContext: ComponentContext,
     private val userRepository: UserRepository,
     private val workoutRepository: WorkoutRepository,
+    private val workoutSessionRepository: WorkoutSessionRepository,
+    private val onNavigateToWorkoutSession: (workoutId: String) -> Unit,
 ) : ComponentContext by componentContext {
 
     private val scope = coroutineScope()
@@ -28,11 +32,16 @@ class HomeComponent(
 
     val weekDates = getWeekDates(_selectedDate.value)
 
-    private val _workouts = MutableValue<List<Workout>>(emptyList())
-    val workouts: Value<List<Workout>> = _workouts
+    val workouts = DataHolder<List<Workout>>()
 
-    private val _workoutsState = MutableValue<ComponentState>(ComponentState.Idle)
-    val workoutsState: Value<ComponentState> = _workoutsState
+    // Track if intro animation has been shown
+    private val _hasShownIntro = MutableValue(false)
+    val hasShownIntro: Value<Boolean> = _hasShownIntro
+
+    fun markIntroAsShown() {
+        _hasShownIntro.value = true
+    }
+
 
     val currentUser: StateFlow<User?> = userRepository.me()
         .stateIn(
@@ -54,19 +63,11 @@ class HomeComponent(
     }
 
     private fun loadWorkouts() {
-        scope.launch {
-            val localWorkouts = workoutRepository.getWorkoutsByDays(weekDates)
-            _workouts.value = localWorkouts
-
-            executeWithErrorHandling(
-                coroutineScope = scope,
-                state = _workoutsState,
-                block = { workoutRepository.refreshWorkoutsByDays(weekDates) },
-                onSuccess = { workouts: List<Workout> ->
-                    _workouts.value = workouts
-                }
-            )
-        }
+        workouts.load(
+            coroutineScope = scope,
+            localDataProvider = { workoutRepository.getWorkoutsByDays(weekDates) },
+            remoteDataProvider = { workoutRepository.refreshWorkoutsByDays(weekDates) }
+        )
     }
 
     private fun getWeekDates(fromDate: DayMonthYear): List<DayMonthYear> {
@@ -75,5 +76,29 @@ class HomeComponent(
         return (0..6).map { offset ->
             fromDate.addDays(mondayOffset + offset)
         }
+    }
+
+    fun startWorkoutSession(workoutId: String) {
+        scope.launch {
+            // Check if session already exists
+            val existingSession = workoutSessionRepository.observeWorkoutSession(workoutId).first()
+
+            if (existingSession == null) {
+                // Create new session
+                workoutSessionRepository.createSession(workoutId)
+            }
+
+            // Navigate to workout session screen
+            onNavigateToWorkoutSession(workoutId)
+        }
+    }
+
+    fun getWorkoutSession(workoutId: String): StateFlow<WorkoutSession?> {
+        return workoutSessionRepository.observeWorkoutSession(workoutId)
+            .stateIn(
+                scope = scope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = null
+            )
     }
 }

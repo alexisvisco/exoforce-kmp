@@ -28,4 +28,20 @@ class WorkoutClient(private val httpClient: HttpClient) {
         }.body()
     }
 
+    @Serializable
+    data class GetWorkoutByIdRequest(
+        val workoutId: String
+    )
+
+    @Serializable
+    data class GetWorkoutByIdResponse(
+        val workout: RemoteWorkout
+    )
+
+    suspend fun getWorkoutById(
+        req: GetWorkoutByIdRequest
+    ): GetWorkoutByIdResponse {
+        return httpClient.get("/v1/workouts/${req.workoutId}").body()
+    }
+
 }

@@ -13,6 +13,7 @@ import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.exoforce.component.RootComponent
 import com.exoforce.core.theme.AppTheme
 import com.exoforce.home.ui.HomeScreen
+import com.exoforce.presentation.screen.WorkoutSessionScreen
 import com.exoforce.presentation.screen.onboarding.OnboardingScreen
 
 @Composable
@@ -38,6 +39,7 @@ fun RootContent(component: RootComponent) {
         when (val child = it.instance) {
             is RootComponent.Child.Onboarding -> OnboardingScreen(child.component)
             is RootComponent.Child.Home -> HomeScreen(child.component)
+            is RootComponent.Child.WorkoutSession -> WorkoutSessionScreen(child.component)
         }
     }
 }

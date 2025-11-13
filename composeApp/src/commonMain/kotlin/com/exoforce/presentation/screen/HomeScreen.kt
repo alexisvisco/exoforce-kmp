@@ -44,9 +44,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import com.exoforce.component.helpers.DataState
 import com.exoforce.core.theme.AppTheme
 import com.exoforce.core.theme.Icons
-import com.exoforce.core.utils.ComponentState
+import com.exoforce.core.utils.DateLocalizationUtils
 import com.exoforce.data.domain.PreviewUserJames
 import com.exoforce.data.domain.PreviewWorkoutCompleted
 import com.exoforce.data.domain.User
@@ -55,9 +56,14 @@ import com.exoforce.presentation.component.base.AppButton
 import com.exoforce.presentation.component.exercise.WorkoutExercises
 import exoforce.composeapp.generated.resources.Res
 import exoforce.composeapp.generated.resources.app_name
+import exoforce.composeapp.generated.resources.homescreen_goodevening
+import exoforce.composeapp.generated.resources.homescreen_goodmorning
 import exoforce.composeapp.generated.resources.homescreen_no_exercises
 import kotlinx.coroutines.delay
-import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone.Companion.currentSystemDefault
+import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -68,21 +74,33 @@ data class DayItem(
 
 @Composable
 fun HomeScreen(component: HomeComponent) {
-    var showIntro by remember { mutableStateOf(true) }
-    var showContent by remember { mutableStateOf(false) }
+    val hasShownIntro by component.hasShownIntro.subscribeAsState()
+    var showIntro by remember { mutableStateOf(!hasShownIntro) }
+    var showContent by remember { mutableStateOf(hasShownIntro) }
     val user = component.currentUser.collectAsState()
-    val workoutState = component.workoutsState.subscribeAsState()
-    val workouts by component.workouts.subscribeAsState()
+    val workouts by component.workouts.state.subscribeAsState()
     val selectedDate by component.selectedDate.subscribeAsState()
     val days = component.weekDates
 
-    LaunchedEffect(Unit) {
-        // Animation du logo qui grossit puis disparaît
-        delay(250)
-        delay(750) // Durée d'affichage du logo
-        showIntro = false
-        delay(150) // Transition
-        showContent = true
+    val currentWorkout = when (val state = workouts) {
+        is DataState.Success -> state.data.find { it.day == selectedDate }
+        else -> null
+    }
+
+    val session = remember(currentWorkout?.id) {
+        currentWorkout?.let { component.getWorkoutSession(it.id) }
+    }?.collectAsState(initial = null)?.value
+
+    LaunchedEffect(hasShownIntro) {
+        if (!hasShownIntro) {
+            // Animation du logo qui grossit puis disparaît
+            delay(250)
+            delay(750) // Durée d'affichage du logo
+            showIntro = false
+            delay(150) // Transition
+            showContent = true
+            component.markIntroAsShown()
+        }
     }
 
     Scaffold(
@@ -128,11 +146,12 @@ fun HomeScreen(component: HomeComponent) {
                 if (user.value != null) {
                     HomeContent(
                         user = user.value!!,
-                        workoutState.value,
                         workouts,
                         selectedDate,
                         days,
-                        updateSelectedDate = component::updateSelectedDate
+                        hasSession = session != null,
+                        updateSelectedDate = component::updateSelectedDate,
+                        onStartWorkoutSession = component::startWorkoutSession
                     )
                 } else {
                     Box(
@@ -155,13 +174,17 @@ fun HomeScreen(component: HomeComponent) {
 @Composable
 fun HomeContent(
     user: User,
-    value: ComponentState = ComponentState.Idle,
-    workouts: List<Workout> = emptyList(),
+    workouts: DataState<List<Workout>> = DataState.Loading,
     selectedDate: DayMonthYear = DayMonthYear.today(),
     weekDates: List<DayMonthYear> = emptyList(),
-    updateSelectedDate: (date: DayMonthYear) -> Unit
+    hasSession: Boolean = false,
+    updateSelectedDate: (date: DayMonthYear) -> Unit = {},
+    onStartWorkoutSession: (String) -> Unit = {}
 ) {
-    val currentWorkout: Workout? = workouts.find { it.day == selectedDate }
+    val currentWorkout: Workout? = when (workouts) {
+        is DataState.Success -> workouts.data.find { it.day == selectedDate }
+        else -> null
+    }
 
     Column(
         modifier = Modifier
@@ -177,7 +200,7 @@ fun HomeContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = " ${user.name}",
+                text = "${stringResource(getHelloWord())}, ${user.name}",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp,
@@ -231,14 +254,14 @@ fun HomeContent(
                 modifier = Modifier.padding(vertical = 16.dp).fillMaxWidth()
             ) {
                 AppButton(
-                    onClick = {},
+                    onClick = { onStartWorkoutSession(currentWorkout.id) },
                     modifier = Modifier.fillMaxWidth(),
-                    text = "Commencer l'entraînement",
+                    text = if (hasSession) "Continuer l'entraînement" else "Commencer l'entraînement",
                 )
             }
             WorkoutExercises(
                 workout = currentWorkout,
-                isLoading = value == ComponentState.Loading
+                isLoading = workouts is DataState.Loading,
             )
         } else {
             Box(
@@ -269,7 +292,7 @@ fun DaySelector(
             .padding(vertical = 4.dp)
     ) {
         Text(
-            text = getDayOfWeekShort(day.day.date.dayOfWeek),
+            text = DateLocalizationUtils.getDayOfWeekShort(day.day.date.dayOfWeek),
             fontSize = 11.sp,
             color = if (day.isSelected) {
                 MaterialTheme.colorScheme.onBackground
@@ -311,16 +334,16 @@ fun DaySelector(
     }
 }
 
-fun getDayOfWeekShort(dayOfWeek: DayOfWeek): String {
-    return when (dayOfWeek) {
-        DayOfWeek.MONDAY -> "Lun"
-        DayOfWeek.TUESDAY -> "Mar"
-        DayOfWeek.WEDNESDAY -> "Mer"
-        DayOfWeek.THURSDAY -> "Jeu"
-        DayOfWeek.FRIDAY -> "Ven"
-        DayOfWeek.SATURDAY -> "Sam"
-        DayOfWeek.SUNDAY -> "Dim"
-        else -> ""
+
+@Composable
+fun getHelloWord(): StringResource {
+    val currentHour = Clock.System.now()
+        .toLocalDateTime(currentSystemDefault())
+        .hour
+
+    return when (currentHour) {
+        in 4..17 -> Res.string.homescreen_goodmorning
+        else -> Res.string.homescreen_goodevening
     }
 }
 
@@ -330,8 +353,7 @@ fun HomeScreenPreview() {
     AppTheme {
         HomeContent(
             user = PreviewUserJames,
-            value = ComponentState.Idle,
-            workouts = listOf(PreviewWorkoutCompleted.copy(day = DayMonthYear.today())),
+            workouts = DataState.Success(listOf(PreviewWorkoutCompleted.copy(day = DayMonthYear.today()))),
             selectedDate = DayMonthYear.today(),
             weekDates = listOf(
                 DayMonthYear.today().addDays(-3),

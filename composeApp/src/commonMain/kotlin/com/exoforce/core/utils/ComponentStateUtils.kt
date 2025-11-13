@@ -34,6 +34,11 @@ inline fun <T> executeWithErrorHandling(
     crossinline block: suspend () -> Result<T>,
     crossinline onSuccess: (T) -> Unit
 ) {
+    // Prevent multiple simultaneous calls
+    if (state.value is ComponentState.Loading) {
+        return
+    }
+
     state.update { ComponentState.Loading }
 
     coroutineScope.launch {

@@ -143,6 +143,7 @@ interface WorkoutDao {
     }
 
     @Query("SELECT * FROM workouts WHERE day IN (:days) ORDER BY day ASC")
+    @Transaction
     suspend fun getWorkoutsWithExercisesByDays(days: List<DayMonthYear>): List<WorkoutWithRelations>
 }
 

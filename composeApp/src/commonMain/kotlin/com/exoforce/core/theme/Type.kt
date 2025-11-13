@@ -3,14 +3,15 @@ package com.exoforce.core.theme
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontFamily
-import exoforce.composeapp.generated.resources.HelveticaNeueRoman
+import exoforce.composeapp.generated.resources.HelveticaNowDisplay_Regular
 import exoforce.composeapp.generated.resources.NeueMachina_Regular
 import exoforce.composeapp.generated.resources.Res
+import exoforce.composeapp.generated.resources.Suisse_Intl_Mono
 import org.jetbrains.compose.resources.Font
 
 @Composable
 fun appFontFamily() = FontFamily(
-    Font(Res.font.HelveticaNeueRoman),
+    Font(Res.font.HelveticaNowDisplay_Regular),
 )
 
 @Composable
@@ -19,10 +20,16 @@ fun displayFontFamily() = FontFamily(
 )
 
 @Composable
+fun monoFontFamily() = FontFamily(
+    Font(Res.font.Suisse_Intl_Mono),
+)
+
+@Composable
 fun appTypography(): Typography {
     val appFontFamily = appFontFamily()
     val displayFontFamily = displayFontFamily()
     val defaultTypography = Typography()
+
     return Typography(
         displayLarge = defaultTypography.displayLarge.copy(fontFamily = displayFontFamily),
         displayMedium = defaultTypography.displayMedium.copy(fontFamily = displayFontFamily),
