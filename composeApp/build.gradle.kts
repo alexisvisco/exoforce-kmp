@@ -17,6 +17,12 @@ kotlin {
         }
     }
 
+    sourceSets.all {
+        languageSettings {
+            optIn("kotlin.time.ExperimentalTime")
+        }
+    }
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -68,6 +74,8 @@ kotlin {
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
 
+            implementation(libs.compottie)
+            implementation(libs.compottie.resources)
         }
         nativeMain.dependencies{
             implementation(libs.ktor.client.darwin)

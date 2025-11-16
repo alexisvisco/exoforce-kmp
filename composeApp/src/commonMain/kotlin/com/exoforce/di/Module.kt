@@ -8,6 +8,7 @@ import com.exoforce.data.local.UserLocalDataSource
 import com.exoforce.data.local.WorkoutLocalDataSource
 import com.exoforce.data.local.WorkoutSessionLocalDataSource
 import com.exoforce.data.remote.AuthClient
+import com.exoforce.data.remote.PerformedExerciseClient
 import com.exoforce.data.remote.UserClient
 import com.exoforce.data.remote.WorkoutClient
 import com.exoforce.data.repository.AuthRepository
@@ -31,6 +32,7 @@ val appModule = module {
     singleOf(::UserClient)
     singleOf(::AuthClient)
     singleOf(::WorkoutClient)
+    singleOf(::PerformedExerciseClient)
 
     singleOf(::UserRepository)
     singleOf(::AuthRepository)

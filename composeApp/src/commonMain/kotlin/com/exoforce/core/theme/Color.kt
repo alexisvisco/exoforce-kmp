@@ -16,9 +16,7 @@ object BaseColors {
     val Red600 = Color(0xFFDC2626)
     val Red700 = Color(0xFFB91C1C)
 
-    val Emerald400 = Color(0xFF34D399)
-    val Emerald600 = Color(0xFF059669)
-    val Emerald700 = Color(0xFF047857)
+
 
     val Neutral100 = Color(0xFFF5F5F5)
     val Neutral300 = Color(0xFFD4D4D4)
@@ -26,6 +24,10 @@ object BaseColors {
     val Neutral800 = Color(0xFF262626)
     val Neutral900 = Color(0xFF171717)
     val Neutral950 = Color(0xFF0A0A0A)
+
+    val Green400 = Color(0xFF05df72)
+    val Green500 = Color(0xFF00c951)
+    val Green600 = Color(0xFF00a63e)
 }
 
 // === Palette Light ===
@@ -67,3 +69,15 @@ val LightColors: ColorScheme = lightColorScheme(
 
     scrim = BaseColors.Black,
 )
+
+fun ColorScheme.lightSuccess(): Color {
+    return BaseColors.Green400
+}
+
+fun ColorScheme.success(): Color {
+    return BaseColors.Green500
+}
+
+fun ColorScheme.darkSuccess(): Color {
+    return BaseColors.Green600
+}

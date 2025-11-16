@@ -60,7 +60,7 @@ import exoforce.composeapp.generated.resources.homescreen_goodevening
 import exoforce.composeapp.generated.resources.homescreen_goodmorning
 import exoforce.composeapp.generated.resources.homescreen_no_exercises
 import kotlinx.coroutines.delay
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.TimeZone.Companion.currentSystemDefault
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource

@@ -12,7 +12,7 @@ import androidx.room.Query
 import androidx.room.Relation
 import androidx.room.Transaction
 import androidx.room.Upsert
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Entity(tableName = "exercises")
 data class ExerciseEntity(

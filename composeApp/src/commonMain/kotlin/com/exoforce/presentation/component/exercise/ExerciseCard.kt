@@ -35,13 +35,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.exoforce.core.theme.AppTheme
 import com.exoforce.core.theme.Icons
+import com.exoforce.core.theme.success
 import com.exoforce.core.utils.TimeUtils
 import com.exoforce.data.domain.Exercise
 import com.exoforce.data.domain.ExerciseClassification
@@ -51,7 +54,12 @@ import com.exoforce.data.domain.Workout
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
-fun WorkoutExercises(workout: Workout, isLoading: Boolean) {
+fun WorkoutExercises(
+    workout: Workout,
+    isLoading: Boolean,
+    exerciseIdsCompleted: Set<String> = emptySet(),
+    onExerciseClick: ((Exercise) -> Unit)? = null
+) {
     if (isLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -72,7 +80,9 @@ fun WorkoutExercises(workout: Workout, isLoading: Boolean) {
                 val exercise = workout.exercises[index]
                 ExerciseItem(
                     exercise = exercise,
-                    exerciseNumber = index + 1
+                    exerciseNumber = index + 1,
+                    exerciseIdsCompleted = exerciseIdsCompleted,
+                    onClick = onExerciseClick
                 )
             }
         }
@@ -84,9 +94,12 @@ fun WorkoutExercises(workout: Workout, isLoading: Boolean) {
 fun ExerciseItem(
     exercise: Exercise,
     exerciseNumber: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    exerciseIdsCompleted: Set<String> = emptySet(),
+    onClick: ((Exercise) -> Unit)? = null
 ) {
     var isSetsExpanded by remember { mutableStateOf(false) }
+    val isCompleted = exerciseIdsCompleted.contains(exercise.id)
 
     Card(
         modifier = modifier
@@ -95,8 +108,15 @@ fun ExerciseItem(
                 color = MaterialTheme.colorScheme.outline,
                 shape = RoundedCornerShape(8.dp)
             )
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable { onClick(exercise) }
+                } else {
+                    Modifier
+                }
+            ),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
@@ -106,7 +126,7 @@ fun ExerciseItem(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Header with exercise number and title
+            // Header with exercise number/check and title
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -114,19 +134,30 @@ fun ExerciseItem(
             ) {
                 Surface(
                     shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.primary,
+                    color = if (isCompleted)
+                        MaterialTheme.colorScheme.success()
+                    else MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(32.dp)
                 ) {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        Text(
-                            text = "$exerciseNumber",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
+                        if (isCompleted) {
+                            Icon(
+                                painter = Icons.Checkmark,
+                                contentDescription = "Completed",
+                                tint = MaterialTheme.colorScheme.onTertiary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        } else {
+                            Text(
+                                text = "$exerciseNumber",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
                     }
                 }
 
@@ -142,8 +173,9 @@ fun ExerciseItem(
                 }
             }
 
+
             // Description
-            if (exercise.description.isNotEmpty()) {
+            if (exercise.description.isNotEmpty() && !isCompleted) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = exercise.description,
@@ -215,7 +247,7 @@ fun ExerciseItem(
             }
 
             // Sets with collapsible functionality
-            if (exercise.sets.isNotEmpty()) {
+            if (exercise.sets.isNotEmpty() && !isCompleted) {
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(
                     color = MaterialTheme.colorScheme.outlineVariant,
@@ -265,7 +297,7 @@ fun ExerciseItem(
             }
 
             // Classifications (Tags)
-            if (exercise.classifications.isNotEmpty()) {
+            if (exercise.classifications.isNotEmpty() && !isCompleted) {
                 Spacer(modifier = Modifier.height(16.dp))
                 LazyRow(
                     modifier = Modifier.fillMaxWidth(),
@@ -278,7 +310,7 @@ fun ExerciseItem(
             }
 
             // Rest after exercise
-            if (exercise.restAfterExerciseSec > 0) {
+            if (exercise.restAfterExerciseSec > 0 && !isCompleted) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -358,7 +390,6 @@ fun SetInfoRow(setNumber: Int, set: ExerciseSet) {
     }
 }
 
-@Composable
 fun buildCompactSetPattern(set: ExerciseSet): String {
     return buildString {
         when (set.getType()) {
@@ -472,7 +503,6 @@ fun SetTypeBadgeCompact(setType: ExerciseSet.Type) {
 }
 
 
-
 @Composable
 fun SetDetail(value: String, unit: String) {
     Row(
@@ -499,7 +529,7 @@ fun SetDetail(value: String, unit: String) {
 
 @Composable
 fun MetricChip(
-    icon: androidx.compose.ui.graphics.painter.Painter,
+    icon: Painter,
     label: String,
     subtitle: String
 ) {
@@ -565,7 +595,8 @@ fun ExerciseItemPreview() {
         ) {
             ExerciseItem(
                 exercise = PreviewExerciseRunning,
-                exerciseNumber = 1
+                exerciseNumber = 1,
+                exerciseIdsCompleted = setOf("ex_006"),
             )
         }
     }

@@ -6,7 +6,7 @@ import com.exoforce.data.mapper.toDomain
 import com.exoforce.data.mapper.toEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 
 class WorkoutSessionRepository(

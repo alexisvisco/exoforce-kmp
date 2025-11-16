@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import exoforce.composeapp.generated.resources.Res
 import exoforce.composeapp.generated.resources.icon_arrow_backward
 import exoforce.composeapp.generated.resources.icon_bolt_filled
+import exoforce.composeapp.generated.resources.icon_checkmark
 import exoforce.composeapp.generated.resources.icon_clock
 import exoforce.composeapp.generated.resources.icon_eye_filled
 import exoforce.composeapp.generated.resources.icon_eye_slash_filled
@@ -19,7 +20,6 @@ import exoforce.composeapp.generated.resources.icon_xmark_circle_filled
 import org.jetbrains.compose.resources.painterResource
 
 object Icons {
-
     val EyeFilled: Painter
         @Composable get() = painterResource(Res.drawable.icon_eye_filled)
 
@@ -59,4 +59,7 @@ object Icons {
 
     val PauseCircleFilled: Painter
         @Composable get() = painterResource(Res.drawable.icon_pause_circle_filled)
+
+    val Checkmark: Painter
+        @Composable get() = painterResource(Res.drawable.icon_checkmark)
 }

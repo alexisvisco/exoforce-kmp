@@ -1,34 +1,42 @@
 package com.exoforce.component.helpers
 
-import com.arkivanov.decompose.value.MutableValue
-import com.arkivanov.decompose.value.Value
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlin.time.Duration.Companion.seconds
 
-class Stopwatch(
+class StopwatchTimer(
     private val scope: CoroutineScope,
     private val updateIntervalMs: Long = 100
 ) {
     private var timerJob: Job? = null
     private var startedAt: Instant? = null
 
-    private val _elapsedSeconds = MutableValue(0)
-    val elapsedSeconds: Value<Int> = _elapsedSeconds
+    private val _elapsedSeconds = MutableStateFlow(0)
+    val elapsedSeconds: StateFlow<Int> = _elapsedSeconds
+
+    private val _isPaused = MutableStateFlow(true)
+    val isPaused: StateFlow<Boolean> = _isPaused
 
     fun start(initialSeconds: Int = 0, resumeInstant: Instant? = Clock.System.now()) {
+        println("DEBUG StopwatchTimer: start() called with initialSeconds=$initialSeconds, resumeInstant=$resumeInstant")
         timerJob?.cancel()
         if (resumeInstant == null) {
             startedAt = null
             _elapsedSeconds.value = initialSeconds
+            _isPaused.value = true
+            println("DEBUG StopwatchTimer: start() with null resumeInstant, setting paused=true")
             return
         }
         startedAt = resumeInstant - initialSeconds.seconds
         _elapsedSeconds.value = initialSeconds
+        _isPaused.value = false
+        println("DEBUG StopwatchTimer: start() starting timer, elapsedSeconds=${_elapsedSeconds.value}, isPaused=${_isPaused.value}")
         startTimer()
     }
 
@@ -37,14 +45,14 @@ class Stopwatch(
         timerJob?.cancel()
         timerJob = null
         startedAt = null
+        _isPaused.value = true
+        _isPaused.value = true
     }
 
     fun resume(resumeInstant: Instant = Clock.System.now()) {
-        if (!isPaused()) return
+        if (!isPaused.value) return
         start(totalSeconds(), resumeInstant)
     }
-
-    fun isPaused(): Boolean = startedAt == null
 
     fun totalSeconds(): Int {
         updateElapsedTime()
@@ -54,6 +62,7 @@ class Stopwatch(
     fun reset() {
         pause()
         _elapsedSeconds.value = 0
+        _elapsedSeconds.value = 0
     }
 
     private fun updateElapsedTime() {
@@ -61,7 +70,9 @@ class Stopwatch(
         val elapsed = (Clock.System.now() - anchor).inWholeSeconds.toInt()
         if (_elapsedSeconds.value != elapsed) {
             _elapsedSeconds.value = elapsed
+            _elapsedSeconds.value = elapsed
         } else {
+            _elapsedSeconds.value = elapsed
             _elapsedSeconds.value = elapsed
         }
     }
@@ -76,6 +87,12 @@ class Stopwatch(
     }
 
     fun cleanup() {
+        println("DEBUG StopwatchTimer: cleanup() called, current elapsedSeconds=${_elapsedSeconds.value}, isPaused=${_isPaused.value}")
         timerJob?.cancel()
+        timerJob = null
+        startedAt = null
+        _elapsedSeconds.value = 0
+        _isPaused.value = true
+        println("DEBUG StopwatchTimer: cleanup() done, elapsedSeconds=${_elapsedSeconds.value}, isPaused=${_isPaused.value}")
     }
 }

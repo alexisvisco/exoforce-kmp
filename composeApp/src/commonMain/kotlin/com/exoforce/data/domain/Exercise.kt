@@ -10,7 +10,7 @@ import exoforce.composeapp.generated.resources.exercise_classification_kind_glob
 import exoforce.composeapp.generated.resources.exercise_classification_kind_major_muscle
 import exoforce.composeapp.generated.resources.exercise_classification_kind_specific_capacity
 import exoforce.composeapp.generated.resources.exercise_classification_kind_specific_zone
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -262,4 +262,5 @@ object ExerciseClassificationKindSerializer : KSerializer<ExerciseClassification
         return ExerciseClassificationKind.fromValue(value)
             ?: throw SerializationException("Unknown ExerciseClassificationKind: $value")
     }
+
 }

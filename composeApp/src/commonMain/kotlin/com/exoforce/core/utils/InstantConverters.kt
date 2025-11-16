@@ -1,7 +1,7 @@
 package com.exoforce.core.utils
 
 import androidx.room.TypeConverter
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 class InstantConverters {
     @TypeConverter

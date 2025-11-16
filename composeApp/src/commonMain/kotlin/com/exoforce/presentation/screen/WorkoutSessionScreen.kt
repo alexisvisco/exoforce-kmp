@@ -52,7 +52,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun WorkoutSessionScreen(component: WorkoutSessionComponent) {
     val session by component.session.collectAsState()
-    val elapsedSeconds by component.elapsedSeconds.subscribeAsState()
+    val elapsedSeconds by component.elapsedSeconds.collectAsState()
     val workoutState by component.workout.state.subscribeAsState()
     val workout by component.workout.state.subscribeAsState()
 
@@ -63,7 +63,10 @@ fun WorkoutSessionScreen(component: WorkoutSessionComponent) {
         isPaused = session?.pausedAt != null,
         onPause = { component.pauseSession() },
         onResume = { component.resumeSession() },
-        onBack = { component.back() }
+        onBack = { component.back() },
+        goToExerciseExecution = { exerciseId ->
+            component.goToExerciseExecution(exerciseId)
+        }
     )
 }
 
@@ -78,7 +81,8 @@ fun WorkoutSessionContent(
     onPause: () -> Unit,
     onResume: () -> Unit,
     onBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    goToExerciseExecution: (String) -> Unit = {}
 ) {
     Scaffold(
         modifier = modifier,
@@ -188,7 +192,10 @@ fun WorkoutSessionContent(
                     is DataState.Success -> {
                         WorkoutExercises(
                             workout = state.data,
-                            isLoading = false
+                            isLoading = false,
+                            onExerciseClick = { ex ->
+                                goToExerciseExecution(ex.id)
+                            }
                         )
                     }
 
@@ -222,7 +229,7 @@ fun WorkoutSessionScreenPreview() {
             isPaused = false,
             onPause = {},
             onResume = {},
-            onBack = {}
+            onBack = {},
         )
     }
 }

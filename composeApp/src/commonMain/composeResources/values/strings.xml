@@ -55,7 +55,7 @@
     <string name="homescreen_no_exercises">Aucun exercice de prévu</string>
 
 <!-- Workout Session screen -->
-    <string name="workout_session_title">Entrainement</string>
+    <string name="workout_session_title">Entrainements</string>
     <string name="workout_session_back">Back</string>
     <string name="workout_session_resume">Resume</string>
     <string name="workout_session_pause">Pause</string>

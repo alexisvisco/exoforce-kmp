@@ -13,6 +13,8 @@ import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.exoforce.component.RootComponent
 import com.exoforce.core.theme.AppTheme
 import com.exoforce.home.ui.HomeScreen
+import com.exoforce.presentation.screen.ExerciseExecutionFinishScreen
+import com.exoforce.presentation.screen.ExerciseExecutionScreen
 import com.exoforce.presentation.screen.WorkoutSessionScreen
 import com.exoforce.presentation.screen.onboarding.OnboardingScreen
 
@@ -40,6 +42,10 @@ fun RootContent(component: RootComponent) {
             is RootComponent.Child.Onboarding -> OnboardingScreen(child.component)
             is RootComponent.Child.Home -> HomeScreen(child.component)
             is RootComponent.Child.WorkoutSession -> WorkoutSessionScreen(child.component)
+            is RootComponent.Child.ExerciseExecution -> ExerciseExecutionScreen(child.component)
+            is RootComponent.Child.ExerciseExecutionFinish -> ExerciseExecutionFinishScreen(
+                onFinish = { child.component.finish() }
+            )
         }
     }
 }

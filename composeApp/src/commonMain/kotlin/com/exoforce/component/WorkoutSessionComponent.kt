@@ -1,10 +1,9 @@
 package com.exoforce.component
 
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.exoforce.component.helpers.DataHolder
-import com.exoforce.component.helpers.Stopwatch
+import com.exoforce.component.helpers.StopwatchTimer
 import com.exoforce.data.domain.Workout
 import com.exoforce.data.domain.WorkoutSession
 import com.exoforce.data.repository.WorkoutRepository
@@ -19,11 +18,12 @@ class WorkoutSessionComponent(
     private val workoutId: String,
     private val workoutRepository: WorkoutRepository,
     private val workoutSessionRepository: WorkoutSessionRepository,
-    private val onBack: () -> Unit
+    private val onBack: () -> Unit,
+    public val goToExerciseExecution: (exerciseId: String) -> Unit
 ) : ComponentContext by componentContext {
 
     private val scope = coroutineScope()
-    private val stopwatch = Stopwatch(scope)
+    private val stopwatch = StopwatchTimer(scope)
 
 
     val workout = DataHolder<Workout>()
@@ -35,7 +35,7 @@ class WorkoutSessionComponent(
             initialValue = null
         )
 
-    val elapsedSeconds: Value<Int> = stopwatch.elapsedSeconds
+    val elapsedSeconds = stopwatch.elapsedSeconds
 
     init {
         scope.launch {

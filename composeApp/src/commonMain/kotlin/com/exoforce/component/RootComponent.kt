@@ -5,10 +5,10 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
-import com.arkivanov.decompose.router.stack.replaceCurrent
-import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.push
+import com.arkivanov.decompose.router.stack.replaceCurrent
+import com.arkivanov.decompose.value.Value
 import com.exoforce.component.onboarding.OnboardingComponent
 import com.exoforce.data.repository.AuthRepository
 import com.exoforce.data.repository.UserRepository
@@ -65,7 +65,36 @@ class RootComponent(
                     workoutId = config.workoutId,
                     workoutRepository = workoutRepository,
                     workoutSessionRepository = workoutSessionRepository,
-                    onBack = { navigation.pop() }
+                    onBack = { navigation.pop() },
+                    goToExerciseExecution = { exerciseId ->
+                        navigation.push(Config.ExerciseExecution(config.workoutId, exerciseId))
+                    }
+                )
+            )
+
+            is Config.ExerciseExecution -> Child.ExerciseExecution(
+                ExerciseExecutionComponent(
+                    componentContext = componentContext,
+                    workoutId = config.workoutId,
+                    exerciseId = config.exerciseId,
+                    workoutRepository = workoutRepository,
+                    workoutSessionRepository = workoutSessionRepository,
+                    onBack = { navigation.pop() },
+                    onFinish = {
+                        navigation.push(Config.ExerciseExecutionFinish(config.workoutId, config.exerciseId))
+                    }
+                )
+            )
+
+            is Config.ExerciseExecutionFinish -> Child.ExerciseExecutionFinish(
+                ExerciseExecutionFinishComponent(
+                    componentContext = componentContext,
+                    workoutId = config.workoutId,
+                    exerciseId = config.exerciseId,
+                    onFinish = {
+                        navigation.pop() // Pop finish screen
+                        navigation.pop() // Pop exercise execution screen
+                    }
                 )
             )
         }
@@ -74,6 +103,8 @@ class RootComponent(
         data class Onboarding(val component: OnboardingComponent) : Child()
         data class Home(val component: HomeComponent) : Child()
         data class WorkoutSession(val component: WorkoutSessionComponent) : Child()
+        data class ExerciseExecution(val component: ExerciseExecutionComponent) : Child()
+        data class ExerciseExecutionFinish(val component: ExerciseExecutionFinishComponent) : Child()
     }
 
     @Serializable
@@ -86,5 +117,11 @@ class RootComponent(
 
         @Serializable
         data class WorkoutSession(val workoutId: String) : Config()
+
+        @Serializable
+        data class ExerciseExecution(val workoutId: String, val exerciseId: String) : Config()
+
+        @Serializable
+        data class ExerciseExecutionFinish(val workoutId: String, val exerciseId: String) : Config()
     }
 }

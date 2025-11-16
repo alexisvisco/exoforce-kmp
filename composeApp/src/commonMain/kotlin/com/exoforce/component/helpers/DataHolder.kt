@@ -19,11 +19,42 @@ sealed class DataState<out T> {
 }
 
 /**
+ * Strategy for loading data
+ */
+enum class DataLoadingStrategy {
+    /**
+     * Load local data first (if available), then fetch remote data.
+     * onSuccess will be called twice if local data is available.
+     */
+    LOCAL_THEN_REMOTE,
+
+    /**
+     * Try to fetch remote data first. Only use local data as fallback if remote fails.
+     * onSuccess will be called only once.
+     */
+    REMOTE_FALLBACK_LOCAL
+}
+
+/**
  * Generic data holder with loading and error states
  */
-class DataHolder<T> {
+class DataHolder<T>(
+    onSuccess: ((T) -> Unit)? = null,
+    onError: ((StringResource?) -> Unit)? = null
+) {
     private val _state = MutableValue<DataState<T>>(DataState.Loading)
+
     val state: Value<DataState<T>> = _state
+
+    init {
+        _state.subscribe { it ->
+            when (it) {
+                is DataState.Success -> onSuccess?.invoke(it.data)
+                is DataState.Error -> onError?.invoke(it.messageId)
+                else -> {}
+            }
+        }
+    }
 
     /**
      * Load data with error handling
@@ -31,34 +62,66 @@ class DataHolder<T> {
      * @param coroutineScope The coroutine scope to launch the operation
      * @param localDataProvider Optional function to provide local/cached data immediately
      * @param remoteDataProvider Function to fetch remote data
+     * @param strategy Strategy to use for loading data (default: LOCAL_THEN_REMOTE)
      */
     fun load(
         coroutineScope: CoroutineScope,
         localDataProvider: (suspend () -> T?)? = null,
-        remoteDataProvider: suspend () -> Result<T>
+        remoteDataProvider: suspend () -> Result<T>,
+        strategy: DataLoadingStrategy = DataLoadingStrategy.LOCAL_THEN_REMOTE
     ) {
         coroutineScope.launch {
             _state.update { DataState.Loading }
 
-            localDataProvider?.let { provider ->
-                provider()?.let { data ->
-                    _state.update { DataState.Success(data) }
-                }
-            }
+            when (strategy) {
+                DataLoadingStrategy.LOCAL_THEN_REMOTE -> {
+                    // Load local data first if available
+                    localDataProvider?.let { provider ->
+                        provider()?.let { data ->
+                            _state.update { DataState.Success(data) }
+                        }
+                    }
 
-            // Then fetch remote data
-            val result = remoteDataProvider()
+                    // Then fetch remote data
+                    val result = remoteDataProvider()
 
-            if (result.isSuccess) {
-                result.getOrNull()?.let { data ->
-                    _state.update { DataState.Success(data) }
+                    if (result.isSuccess) {
+                        result.getOrNull()?.let { data ->
+                            _state.update { DataState.Success(data) }
+                        }
+                    } else {
+                        val error = result.exceptionOrNull()
+                        if (error is LocalizedError) {
+                            _state.update { DataState.Error(error.getLocalizedMessageId()) }
+                        } else {
+                            _state.update { DataState.Error(null) }
+                        }
+                    }
                 }
-            } else {
-                val error = result.exceptionOrNull()
-                if (error is LocalizedError) {
-                    _state.update { DataState.Error(error.getLocalizedMessageId()) }
-                } else {
-                    _state.update { DataState.Error(null) }
+
+                DataLoadingStrategy.REMOTE_FALLBACK_LOCAL -> {
+                    // Try remote first
+                    val result = remoteDataProvider()
+
+                    if (result.isSuccess) {
+                        result.getOrNull()?.let { data ->
+                            _state.update { DataState.Success(data) }
+                        }
+                    } else {
+                        // Remote failed, try local as fallback
+                        val localData = localDataProvider?.invoke()
+                        if (localData != null) {
+                            _state.update { DataState.Success(localData) }
+                        } else {
+                            // Both failed, show error
+                            val error = result.exceptionOrNull()
+                            if (error is LocalizedError) {
+                                _state.update { DataState.Error(error.getLocalizedMessageId()) }
+                            } else {
+                                _state.update { DataState.Error(null) }
+                            }
+                        }
+                    }
                 }
             }
         }

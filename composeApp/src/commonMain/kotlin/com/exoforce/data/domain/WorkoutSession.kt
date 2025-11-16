@@ -1,6 +1,6 @@
 package com.exoforce.data.domain
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 data class WorkoutSession(
     val workoutId: String,
