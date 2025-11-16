@@ -19,7 +19,6 @@ actual class BeepPlayer {
     private var tempDir: File? = null
 
     init {
-        // Créer un répertoire temporaire pour les fichiers audio
         tempDir = File(System.getProperty("java.io.tmpdir"), "beep_cache").apply {
             mkdirs()
         }
@@ -30,20 +29,13 @@ actual class BeepPlayer {
 
         playJob = scope.launch {
             try {
-                println("BeepPlayer: Generating beep - frequency=$frequency, duration=$durationMs")
-
-                // Générer le fichier WAV
                 val wavData = generateWavData(frequency, durationMs)
 
-                // Écrire dans un fichier temporaire
                 val tempFile = File(tempDir, "beep_${frequency}_${durationMs}.wav")
                 FileOutputStream(tempFile).use { fos ->
                     fos.write(wavData)
                 }
 
-                println("BeepPlayer: WAV file created: ${tempFile.absolutePath}")
-
-                // Créer et jouer le MediaPlayer
                 mediaPlayer = MediaPlayer().apply {
                     setDataSource(tempFile.absolutePath)
                     setVolume(1.0f, 1.0f)
@@ -51,20 +43,13 @@ actual class BeepPlayer {
                     start()
                 }
 
-                println("BeepPlayer: Playing...")
-
-                // Attendre la fin de la lecture
                 delay(durationMs + 100)
 
                 mediaPlayer?.release()
                 mediaPlayer = null
 
-                // Nettoyer le fichier temporaire
                 tempFile.delete()
-
-                println("BeepPlayer: Finished")
             } catch (e: Exception) {
-                println("BeepPlayer: Error - ${e.message}")
                 e.printStackTrace()
                 mediaPlayer?.release()
                 mediaPlayer = null
@@ -82,7 +67,6 @@ actual class BeepPlayer {
     actual fun release() {
         stop()
         scope.cancel()
-        // Nettoyer tous les fichiers temporaires
         tempDir?.listFiles()?.forEach { it.delete() }
     }
 
@@ -90,14 +74,12 @@ actual class BeepPlayer {
         val sampleRate = 44100
         val numSamples = (durationMs * sampleRate / 1000).toInt()
 
-        // Générer les échantillons PCM
         val samples = ShortArray(numSamples)
         for (i in samples.indices) {
             val angle = 2.0 * PI * i / (sampleRate / frequency.toDouble())
             samples[i] = (sin(angle) * Short.MAX_VALUE * 0.5).toInt().toShort()
         }
 
-        // Appliquer fade in/out pour éviter les clics
         val fadeLength = minOf(numSamples / 10, 100)
         for (i in 0 until fadeLength) {
             val fadeFactor = i.toFloat() / fadeLength
@@ -108,14 +90,13 @@ actual class BeepPlayer {
             samples[i] = (samples[i] * fadeFactor).toInt().toShort()
         }
 
-        // Créer le fichier WAV en mémoire
-        val dataSize = numSamples * 2 // 2 bytes par échantillon
-        val wavSize = 44 + dataSize // L'en-tête WAV fait 44 bytes
+        val dataSize = numSamples * 2
+        val wavSize = 44 + dataSize
 
         return ByteArray(wavSize).apply {
             var pos = 0
 
-            // En-tête RIFF
+            // RIFF
             writeString("RIFF", pos); pos += 4
             writeInt(wavSize - 8, pos); pos += 4
             writeString("WAVE", pos); pos += 4
@@ -134,7 +115,7 @@ actual class BeepPlayer {
             writeString("data", pos); pos += 4
             writeInt(dataSize, pos); pos += 4
 
-            // Données PCM
+            // PCM
             for (sample in samples) {
                 this[pos++] = (sample.toInt() and 0xFF).toByte()
                 this[pos++] = ((sample.toInt() shr 8) and 0xFF).toByte()
