@@ -1,5 +1,6 @@
 package com.exoforce.data.remote.types
 
+import com.exoforce.core.serialization.InstantSerializer
 import kotlin.time.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -14,8 +15,10 @@ data class RemotePerformedExercise(
     @SerialName("workout_id")
     val workoutId: String,
     @SerialName("started_at")
+    @Serializable(with = InstantSerializer::class)
     val startedAt: Instant,
     @SerialName("completed_at")
+    @Serializable(with = InstantSerializer::class)
     val completedAt: Instant?,
 
     // Overall performance metrics
@@ -39,8 +42,10 @@ data class RemotePerformedExerciseSet(
     val exerciseSetId: String?,
     val position: Int,
     @SerialName("started_at")
+    @Serializable(with = InstantSerializer::class)
     val startedAt: Instant,
     @SerialName("completed_at")
+    @Serializable(with = InstantSerializer::class)
     val completedAt: Instant?,
 
     val repetitions: Int?,
@@ -54,8 +59,10 @@ data class RemotePerformedExerciseSet(
     val holdSizeMillimeters: Int?,
 
     @SerialName("created_at")
+    @Serializable(with = InstantSerializer::class)
     val createdAt: Instant? = null,
     @SerialName("updated_at")
+    @Serializable(with = InstantSerializer::class)
     val updatedAt: Instant? = null,
 
     // Relationships

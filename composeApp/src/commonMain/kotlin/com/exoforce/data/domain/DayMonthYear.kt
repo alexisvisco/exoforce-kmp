@@ -1,8 +1,8 @@
 
-import kotlin.time.Clock
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.KSerializer
@@ -13,6 +13,7 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlin.time.Clock
 
 @Serializable(with = DayMonthYearSerializer::class)
 data class DayMonthYear(val date: LocalDate) {
@@ -21,7 +22,7 @@ data class DayMonthYear(val date: LocalDate) {
 
     override fun toString(): String = date.toString() // Returns YYYY-MM-DD
 
-    fun isZero(): Boolean = date.year == 1970 && date.monthNumber == 1 && date.dayOfMonth == 1
+    fun isZero(): Boolean = date.year == 1970 && date.month.number == 1 && date.day == 1
 
     fun addDays(days: Int): DayMonthYear {
         val period = DatePeriod(days = days)

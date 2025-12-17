@@ -1,5 +1,7 @@
 package com.exoforce.data.remote
 
+import com.exoforce.core.serialization.InstantSerializer
+import com.exoforce.data.remote.types.RemoteExercise
 import com.exoforce.data.remote.types.RemotePerformedExercise
 import com.exoforce.data.remote.types.RemotePerformedExerciseSet
 import io.ktor.client.HttpClient
@@ -9,9 +11,9 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import kotlin.time.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 class PerformedExerciseClient(private val httpClient: HttpClient) {
     @Serializable
@@ -19,8 +21,10 @@ class PerformedExerciseClient(private val httpClient: HttpClient) {
         @SerialName("exercise_id")
         val exerciseId: String,
         @SerialName("started_at")
+        @Serializable(with = InstantSerializer::class)
         val startedAt: Instant,
         @SerialName("completed_at")
+        @Serializable(with = InstantSerializer::class)
         val completedAt: Instant,
         @SerialName("total_duration_sec")
         val totalDurationSec: Int,
@@ -37,8 +41,10 @@ class PerformedExerciseClient(private val httpClient: HttpClient) {
         val exerciseSetId: String?,
         val position: Int,
         @SerialName("started_at")
+        @Serializable(with = InstantSerializer::class)
         val startedAt: Instant,
         @SerialName("completed_at")
+        @Serializable(with = InstantSerializer::class)
         val completedAt: Instant?,
         val repetitions: Int?,
         @SerialName("effort_duration_sec")
@@ -59,15 +65,17 @@ class PerformedExerciseClient(private val httpClient: HttpClient) {
         @SerialName("exercise_id")
         val exerciseId: String,
         @SerialName("started_at")
+        @Serializable(with = InstantSerializer::class)
         val startedAt: Instant,
         @SerialName("completed_at")
+        @Serializable(with = InstantSerializer::class)
         val completedAt: Instant?,
         @SerialName("total_duration_sec")
         val totalDurationSec: Int?,
         val rpe: Int?,
         val notes: String,
         val sets: List<RemotePerformedExerciseSet> = emptyList(),
-        val exercise: RemotePerformedExercise? = null
+        val exercise: RemoteExercise? = null
     )
 
     suspend fun createPerformedExercise(

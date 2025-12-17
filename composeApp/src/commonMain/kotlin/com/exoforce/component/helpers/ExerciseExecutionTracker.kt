@@ -29,18 +29,20 @@ class ExerciseExecutionTracker(
     private val _notes = MutableStateFlow("")
     val notes: StateFlow<String> = _notes.asStateFlow()
 
-    fun getOrCreateSet(setNumber: Int): SetData {
-        return _sets.value[setNumber] ?: SetData(
-            position = setNumber - 1,
-            exerciseSetId = exercise.sets.getOrNull(setNumber - 1)?.id,
+    fun getOrCreateSet(setPosition: Int): SetData {
+        val existingSetFromExercise = exercise.sets.getOrNull(setPosition - 1)
+
+        return _sets.value[setPosition] ?: SetData(
+            position = existingSetFromExercise?.position ?: 1,
+            exerciseSetId = existingSetFromExercise?.id,
             startedAt = Clock.System.now()
-        ).also {
-            _sets.value = _sets.value + (setNumber to it)
+        ).also { newSetData ->
+            _sets.value = _sets.value + (setPosition to newSetData)
         }
     }
 
     fun updateSet(
-        setNumber: Int,
+        setPosition: Int,
         completedAt: Instant? = null,
         repetitions: Int? = null,
         effortDurationSec: Int? = null,
@@ -48,7 +50,7 @@ class ExerciseExecutionTracker(
         distanceInMeters: Double? = null,
         holdSizeMillimeters: Int? = null
     ) {
-        val current = getOrCreateSet(setNumber)
+        val current = getOrCreateSet(setPosition)
         val updated = current.copy(
             completedAt = completedAt ?: current.completedAt,
             repetitions = repetitions ?: current.repetitions,
@@ -57,7 +59,7 @@ class ExerciseExecutionTracker(
             distanceInMeters = distanceInMeters ?: current.distanceInMeters,
             holdSizeMillimeters = holdSizeMillimeters ?: current.holdSizeMillimeters
         )
-        _sets.value = _sets.value + (setNumber to updated)
+        _sets.value = _sets.value + (setPosition to updated)
     }
 
     fun updateRpe(value: Int?) {

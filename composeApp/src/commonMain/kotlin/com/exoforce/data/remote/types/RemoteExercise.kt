@@ -1,9 +1,10 @@
 package com.exoforce.data.remote.types
 
+import com.exoforce.core.serialization.InstantSerializer
 import com.exoforce.data.domain.ExerciseClassificationKind
-import kotlin.time.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 @Serializable
 data class RemoteExercise(
@@ -21,9 +22,11 @@ data class RemoteExercise(
     val description: String,
 
     @SerialName("created_at")
+    @Serializable(with = InstantSerializer::class)
     val createdAt: Instant,
 
     @SerialName("updated_at")
+    @Serializable(with = InstantSerializer::class)
     val updatedAt: Instant,
 
     val user: RemoteUser? = null,
@@ -38,9 +41,11 @@ data class RemoteExerciseClassification(
     val kind: ExerciseClassificationKind,
 
     @SerialName("created_at")
+    @Serializable(with = InstantSerializer::class)
     val createdAt: Instant,
 
     @SerialName("updated_at")
+    @Serializable(with = InstantSerializer::class)
     val updatedAt: Instant
 )
 
@@ -84,11 +89,16 @@ data class RemoteExerciseSet(
     @SerialName("hold_size_millimeters")
     val holdSizeMillimeters: Int,
 
+    @SerialName("body_weight_percentage")
+    val bodyWeightPercentage: Double,
+
     val notes: String,
 
     @SerialName("created_at")
+    @Serializable(with = InstantSerializer::class)
     val createdAt: Instant,
 
     @SerialName("updated_at")
+    @Serializable(with = InstantSerializer::class)
     val updatedAt: Instant
 )

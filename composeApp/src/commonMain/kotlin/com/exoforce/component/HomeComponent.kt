@@ -6,6 +6,7 @@ import com.exoforce.component.helpers.DataHolder
 import com.exoforce.data.domain.User
 import com.exoforce.data.domain.Workout
 import com.exoforce.data.domain.WorkoutSession
+import com.exoforce.data.repository.PerformedExerciseRepository
 import com.exoforce.data.repository.UserRepository
 import com.exoforce.data.repository.WorkoutRepository
 import com.exoforce.data.repository.WorkoutSessionRepository
@@ -20,6 +21,7 @@ class HomeComponent(
     private val userRepository: UserRepository,
     private val workoutRepository: WorkoutRepository,
     private val workoutSessionRepository: WorkoutSessionRepository,
+    private val performedExerciseRepository: PerformedExerciseRepository,
     private val onNavigateToWorkoutSession: (workoutId: String) -> Unit,
 ) : ComponentContext by componentContext {
 
@@ -86,6 +88,9 @@ class HomeComponent(
             if (existingSession == null) {
                 // Create new session
                 workoutSessionRepository.createSession(workoutId)
+            } else if (existingSession.pausedAt != null) {
+                // Resume existing session if it was paused
+                workoutSessionRepository.resumeSession(workoutId)
             }
 
             // Navigate to workout session screen
@@ -100,5 +105,16 @@ class HomeComponent(
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = null
             )
+    }
+
+    fun getExerciseIdsCompleted(workoutId: String): StateFlow<Set<String>> {
+        return kotlinx.coroutines.flow.flow {
+            val performedExercises = performedExerciseRepository.getPerformedExercisesByWorkoutId(workoutId)
+            emit(performedExercises.map { it.exerciseId }.toSet())
+        }.stateIn(
+            scope = scope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptySet()
+        )
     }
 }

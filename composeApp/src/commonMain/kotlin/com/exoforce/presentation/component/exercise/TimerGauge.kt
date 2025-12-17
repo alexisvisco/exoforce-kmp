@@ -34,6 +34,7 @@ import com.exoforce.core.media.BeepPlayer
 import com.exoforce.core.theme.AppTheme
 import com.exoforce.core.theme.monoFontFamily
 import com.exoforce.core.utils.TimeUtils
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -46,10 +47,15 @@ fun TimerGauge(
     val isInFinalCountdown = isCountdown && timerState.seconds <= 3 && timerState.seconds > 0
     val isFinished = isCountdown && timerState.seconds == 0
 
-    // Initialize BeepPlayer avec une clé stable
     val beepPlayer = remember(Unit) { BeepPlayer() }
 
-    // Cleanup on dispose
+    LaunchedEffect(Unit) {
+        delay(100)
+        beepPlayer.playBeep(frequency = 800, durationMs = 1)
+        delay(50)
+        beepPlayer.stop()
+    }
+
     DisposableEffect(Unit) {
         onDispose {
             beepPlayer.release()
@@ -70,6 +76,11 @@ fun TimerGauge(
 
             // Éviter de jouer le même beep plusieurs fois
             if (currentSeconds != lastBeepedSecond.value) {
+                beepPlayer.playBeep(
+                    frequency = BeepConstants.FREQUENCY_NORMAL,
+                    durationMs = 1L
+                )
+
                 lastBeepedSecond.value = currentSeconds
 
                 when {
@@ -89,6 +100,7 @@ fun TimerGauge(
                     }
                     // For normal countdowns: beep at 2, 1, and 0
                     !isShortCountdown && currentSeconds == 2 -> {
+                        println( "DEBUG: Playing beep for 2 seconds remaining" )
                         beepPlayer.playBeep(
                             frequency = BeepConstants.FREQUENCY_NORMAL,
                             durationMs = BeepConstants.DURATION_SHORT

@@ -4,7 +4,7 @@ data class ExerciseEvent(
     val type: ExerciseEventType,
     val kind: ExerciseEventKind,
     val durationSec: Int? = null,
-    val setNumber: Int? = null,
+    val setPosition: Int? = null,
     val repetitionNumber: Int? = null,
     val loop: List<ExerciseEvent>? = null
 )
@@ -95,14 +95,18 @@ fun Exercise.buildExerciseEvents(countDownSec: Int? = 5): List<ExerciseEvent> {
         when {
             set.asManyAsPossibleRepetitions && (set.durationPerRepSec > 0 || set.restBetweenRepsSec > 0) -> {
                 val loopEvents = mutableListOf<ExerciseEvent>()
-                loopEvents.add(
-                    ExerciseEvent(
-                        type = effortTypeSet,
-                        kind = ExerciseEventKind.SETS,
-                        setNumber = setNumber,
-                        durationSec = durationPerRepSec
+
+
+                if (restBetweenRepsSec != null) {
+                    loopEvents.add(
+                        ExerciseEvent(
+                            type = effortTypeSet,
+                            kind = ExerciseEventKind.SETS,
+                            setPosition = setNumber,
+                            durationSec = durationPerRepSec
+                        )
                     )
-                )
+                }
 
                 if (restBetweenRepsSec != null) {
                     loopEvents.add(
@@ -110,7 +114,7 @@ fun Exercise.buildExerciseEvents(countDownSec: Int? = 5): List<ExerciseEvent> {
                             type = ExerciseEventType.REST_REP,
                             kind = ExerciseEventKind.SETS,
                             durationSec = restBetweenRepsSec,
-                            setNumber = setNumber
+                            setPosition = setNumber
                         )
                     )
                 }
@@ -120,7 +124,7 @@ fun Exercise.buildExerciseEvents(countDownSec: Int? = 5): List<ExerciseEvent> {
                     ExerciseEvent(
                         type = ExerciseEventType.LOOP,
                         kind = ExerciseEventKind.SETS,
-                        setNumber = setNumber,
+                        setPosition = setNumber,
                         loop = loopEvents
                     )
                 )
@@ -131,14 +135,15 @@ fun Exercise.buildExerciseEvents(countDownSec: Int? = 5): List<ExerciseEvent> {
                     ExerciseEvent(
                         type = effortTypeSet,
                         kind = ExerciseEventKind.SETS,
-                        setNumber = setNumber
+                        durationSec = totalDurationSec,
+                        setPosition = setNumber
                     )
                 )
                 events.add(
                     ExerciseEvent(
                         type = ExerciseEventType.ASK_REP,
                         kind = ExerciseEventKind.SETS,
-                        setNumber = setNumber
+                        setPosition = setNumber
                     )
                 )
             }
@@ -149,7 +154,7 @@ fun Exercise.buildExerciseEvents(countDownSec: Int? = 5): List<ExerciseEvent> {
                         type = effortTypeSet,
                         kind = ExerciseEventKind.SETS,
                         durationSec = totalDurationSec,
-                        setNumber = setNumber
+                        setPosition = setNumber
                     )
                 )
 
@@ -159,7 +164,7 @@ fun Exercise.buildExerciseEvents(countDownSec: Int? = 5): List<ExerciseEvent> {
                         ExerciseEvent(
                             type = ExerciseEventType.ASK_REP,
                             kind = ExerciseEventKind.SETS,
-                            setNumber = setNumber
+                            setPosition = setNumber
                         )
                     )
                 }
@@ -173,7 +178,7 @@ fun Exercise.buildExerciseEvents(countDownSec: Int? = 5): List<ExerciseEvent> {
                             type = effortTypeSet,
                             kind = ExerciseEventKind.SETS,
                             durationSec = durationPerRepSec,
-                            setNumber = setNumber,
+                            setPosition = setNumber,
                             repetitionNumber = repNumber
                         )
                     )
@@ -185,7 +190,7 @@ fun Exercise.buildExerciseEvents(countDownSec: Int? = 5): List<ExerciseEvent> {
                                 kind = ExerciseEventKind.SETS,
                                 durationSec = restBetweenRepsSec,
                                 repetitionNumber = repNumber,
-                                setNumber = setNumber
+                                setPosition = setNumber
                             )
                         )
                     }
@@ -194,7 +199,7 @@ fun Exercise.buildExerciseEvents(countDownSec: Int? = 5): List<ExerciseEvent> {
                     ExerciseEvent(
                         type = ExerciseEventType.ASK_REP,
                         kind = ExerciseEventKind.SETS,
-                        setNumber = setNumber
+                        setPosition = setNumber
                     )
                 )
             }
@@ -204,7 +209,7 @@ fun Exercise.buildExerciseEvents(countDownSec: Int? = 5): List<ExerciseEvent> {
                     ExerciseEvent(
                         type = effortTypeSet,
                         kind = ExerciseEventKind.SETS,
-                        setNumber = setNumber
+                        setPosition = setNumber
                     )
                 )
                 if (set.repetitions > 1) {
@@ -212,7 +217,7 @@ fun Exercise.buildExerciseEvents(countDownSec: Int? = 5): List<ExerciseEvent> {
                         ExerciseEvent(
                             type = ExerciseEventType.ASK_REP,
                             kind = ExerciseEventKind.SETS,
-                            setNumber = setNumber
+                            setPosition = setNumber
                         )
                     )
                 }
@@ -224,7 +229,7 @@ fun Exercise.buildExerciseEvents(countDownSec: Int? = 5): List<ExerciseEvent> {
                 ExerciseEvent(
                     type = ExerciseEventType.ASK_WEIGHT,
                     kind = ExerciseEventKind.SETS,
-                    setNumber = setNumber
+                    setPosition = setNumber
                 )
             )
         }
@@ -233,7 +238,7 @@ fun Exercise.buildExerciseEvents(countDownSec: Int? = 5): List<ExerciseEvent> {
                 ExerciseEvent(
                     type = ExerciseEventType.ASK_HOLD_SIZE,
                     kind = ExerciseEventKind.SETS,
-                    setNumber = setNumber
+                    setPosition = setNumber
                 )
             )
         }
@@ -242,7 +247,7 @@ fun Exercise.buildExerciseEvents(countDownSec: Int? = 5): List<ExerciseEvent> {
                 ExerciseEvent(
                     type = ExerciseEventType.ASK_DISTANCE,
                     kind = ExerciseEventKind.SETS,
-                    setNumber = setNumber
+                    setPosition = setNumber
                 )
             )
         }
@@ -253,7 +258,7 @@ fun Exercise.buildExerciseEvents(countDownSec: Int? = 5): List<ExerciseEvent> {
                     type = ExerciseEventType.REST_SET,
                     kind = ExerciseEventKind.SETS,
                     durationSec = restAfterSetSec,
-                    setNumber = setNumber
+                    setPosition = setNumber
                 )
             )
         }

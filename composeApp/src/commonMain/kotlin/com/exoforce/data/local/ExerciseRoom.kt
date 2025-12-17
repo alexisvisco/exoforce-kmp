@@ -58,6 +58,7 @@ data class ExerciseSetEntity(
     @ColumnInfo(name = "distance_in_meters") val distanceInMeters: Double,
     @ColumnInfo(name = "percentage_1rm") val percentage1RM: Double,
     @ColumnInfo(name = "hold_size_millimeters") val holdSizeMillimeters: Int,
+    @ColumnInfo(name = "body_weight_percentage") val bodyWeightPercentage: Double,
 
     @ColumnInfo(name = "notes") val notes: String,
 

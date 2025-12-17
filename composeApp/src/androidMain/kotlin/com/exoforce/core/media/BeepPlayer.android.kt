@@ -38,7 +38,9 @@ actual class BeepPlayer {
 
                 mediaPlayer = MediaPlayer().apply {
                     setDataSource(tempFile.absolutePath)
-                    setVolume(1.0f, 1.0f)
+                    // Si durée = 1ms, volume = 0 (silencieux), sinon volume max
+                    val volume = if (durationMs <= 1) 0.0f else 1.0f
+                    setVolume(volume, volume)
                     prepare()
                     start()
                 }
@@ -103,13 +105,13 @@ actual class BeepPlayer {
 
             // Chunk fmt
             writeString("fmt ", pos); pos += 4
-            writeInt(16, pos); pos += 4 // Taille du chunk fmt
-            writeShort(1, pos); pos += 2 // Format audio (1 = PCM)
-            writeShort(1, pos); pos += 2 // Nombre de canaux
-            writeInt(sampleRate, pos); pos += 4 // Sample rate
-            writeInt(sampleRate * 2, pos); pos += 4 // Byte rate
-            writeShort(2, pos); pos += 2 // Block align
-            writeShort(16, pos); pos += 2 // Bits par échantillon
+            writeInt(16, pos); pos += 4
+            writeShort(1, pos); pos += 2
+            writeShort(1, pos); pos += 2
+            writeInt(sampleRate, pos); pos += 4
+            writeInt(sampleRate * 2, pos); pos += 4
+            writeShort(2, pos); pos += 2
+            writeShort(16, pos); pos += 2
 
             // Chunk data
             writeString("data", pos); pos += 4

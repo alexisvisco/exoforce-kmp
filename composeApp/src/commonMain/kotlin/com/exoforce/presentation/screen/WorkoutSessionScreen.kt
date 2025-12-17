@@ -51,21 +51,36 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun WorkoutSessionScreen(component: WorkoutSessionComponent) {
+    // Collect all the necessary state from the component
     val session by component.session.collectAsState()
     val elapsedSeconds by component.elapsedSeconds.collectAsState()
     val workoutState by component.workout.state.subscribeAsState()
     val workout by component.workout.state.subscribeAsState()
+    val exerciseIdsCompleted by component.exerciseIdsCompleted.collectAsState()
+    // Use the stopwatch's isPaused state directly to avoid inconsistencies
+    val isPaused by component.stopwatch.isPaused.collectAsState()
 
     WorkoutSessionContent(
         sessionLoading = session == null,
         workout = workout,
         elapsedSeconds = elapsedSeconds,
-        isPaused = session?.pausedAt != null,
+        isPaused = isPaused,
+        exerciseIdsCompleted = exerciseIdsCompleted,
         onPause = { component.pauseSession() },
         onResume = { component.resumeSession() },
-        onBack = { component.back() },
+        onBack = {
+            try {
+                component.back()
+            } catch (e: Exception) {
+                println("Error navigating back: ${e.message}")
+            }
+        },
         goToExerciseExecution = { exerciseId ->
-            component.goToExerciseExecution(exerciseId)
+            try {
+                component.onExerciseClick(exerciseId)
+            } catch (e: Exception) {
+                println("Error navigating to exercise: ${e.message}")
+            }
         }
     )
 }
@@ -78,6 +93,7 @@ fun WorkoutSessionContent(
     workout: DataState<Workout>,
     elapsedSeconds: Int,
     isPaused: Boolean,
+    exerciseIdsCompleted: Set<String> = emptySet(),
     onPause: () -> Unit,
     onResume: () -> Unit,
     onBack: () -> Unit,
@@ -160,17 +176,32 @@ fun WorkoutSessionContent(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Display the formatted timer text
+                    val formattedTime = try {
+                        TimeUtils.formatDurationDigits(elapsedSeconds)
+                    } catch (e: Exception) {
+                        // Fallback in case of formatting error
+                        val minutes = elapsedSeconds / 60
+                        val seconds = elapsedSeconds % 60
+                        "${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}"
+                    }
+
                     Text(
-                        text = TimeUtils.formatDurationDigits(elapsedSeconds),
+                        text = formattedTime,
                         style = MaterialTheme.typography.titleLarge.copy(fontFamily = monoFontFamily()),
                         fontWeight = FontWeight.Bold,
                         fontSize = 48.sp,
                         color = MaterialTheme.colorScheme.onBackground,
                     )
 
+                    // Pause/Resume button
                     IconButton(
                         onClick = {
-                            if (isPaused) onResume() else onPause()
+                            try {
+                                if (isPaused) onResume() else onPause()
+                            } catch (e: Exception) {
+                                println("Error toggling timer state: ${e.message}")
+                            }
                         },
                         modifier = Modifier.aspectRatio(0.8f) // Keep it square
                             .fillMaxHeight() // Fill the height of the Row
@@ -193,6 +224,7 @@ fun WorkoutSessionContent(
                         WorkoutExercises(
                             workout = state.data,
                             isLoading = false,
+                            exerciseIdsCompleted = exerciseIdsCompleted,
                             onExerciseClick = { ex ->
                                 goToExerciseExecution(ex.id)
                             }
@@ -227,9 +259,10 @@ fun WorkoutSessionScreenPreview() {
             workout = DataState.Success(PreviewWorkoutInProgress),
             elapsedSeconds = 12 * 60 + 34,
             isPaused = false,
-            onPause = {},
-            onResume = {},
-            onBack = {},
+            onPause = { /* Preview */ },
+            onResume = { /* Preview */ },
+            onBack = { /* Preview */ },
+            goToExerciseExecution = { /* Preview */ }
         )
     }
 }

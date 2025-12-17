@@ -14,6 +14,7 @@ import com.exoforce.data.domain.ExerciseSet
 import com.exoforce.data.domain.Workout
 import com.exoforce.data.domain.WorkoutSession
 import com.exoforce.data.domain.buildExerciseEvents
+import com.exoforce.data.repository.PerformedExerciseRepository
 import com.exoforce.data.repository.WorkoutRepository
 import com.exoforce.data.repository.WorkoutSessionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlin.time.Clock
 
 
@@ -42,7 +44,8 @@ data class ExerciseExecutionState(
     val events: List<ExerciseEvent>,
     val eventIndex: Int = 0,
     val timerMode: TimerMode = TimerMode.NONE,
-    val currentReps: Int? = null
+    val currentReps: Int? = null,
+    val loopIndex: Int? = null
 ) {
     constructor(
         exercise: Exercise,
@@ -52,15 +55,22 @@ data class ExerciseExecutionState(
         events = events,
         eventIndex = 0,
         timerMode = TimerMode.NONE,
-        currentReps = null
+        currentReps = null,
+        loopIndex = null
     )
 
     fun currentSet(): ExerciseSet? {
-        val maySetNumber = currentEvent().setNumber
+        val maySetNumber = currentEvent().setPosition
         return exercise.sets.find { it.position == maySetNumber }
     }
 
-    fun currentEvent(): ExerciseEvent = events[eventIndex]
+    fun currentEvent(): ExerciseEvent {
+        val currentEvent = events[eventIndex]
+        if (currentEvent.type == ExerciseEventType.LOOP && loopIndex != null) {
+            return currentEvent.loop?.getOrNull(loopIndex) ?: currentEvent
+        }
+        return currentEvent
+    }
 
     fun isAskingForInput(): Boolean {
         val currentEvent = currentEvent()
@@ -87,12 +97,18 @@ data class ExerciseExecutionState(
     }
 }
 
+private sealed class NextDestination {
+    data class Event(val index: Int, val event: ExerciseEvent) : NextDestination()
+    data class Loop(val parentIndex: Int, val loopIndex: Int, val event: ExerciseEvent) : NextDestination()
+}
+
 class ExerciseExecutionComponent(
     componentContext: ComponentContext,
     private val workoutId: String,
     private val exerciseId: String,
     private val workoutRepository: WorkoutRepository,
     private val workoutSessionRepository: WorkoutSessionRepository,
+    private val performedExerciseRepository: PerformedExerciseRepository,
     private val onBack: () -> Unit,
     private val onFinish: () -> Unit
 ) : ComponentContext by componentContext {
@@ -131,12 +147,14 @@ class ExerciseExecutionComponent(
 
             _exerciseExecutionState.value = initialState
 
-            println("DEBUG: events = ${_exerciseExecutionState.value?.events}")
+            println("DEBUG: events = ${_exerciseExecutionState.value?.events} set = ${_exerciseExecutionState.value?.currentSet()}")
 
             _exerciseExecutionState.value?.let { state ->
                 handleNextEvent(
-                    nextEventIndex = 0,
-                    nextEvent = state.currentEvent()
+                    NextDestination.Event(
+                        index = 0,
+                        event = state.currentEvent()
+                    )
                 )
             }
         }
@@ -198,7 +216,7 @@ class ExerciseExecutionComponent(
             if (execState == null) return@combine false
 
             val currentEvent = execState.currentEvent()
-            val setNumber = currentEvent.setNumber ?: 0
+            val setNumber = currentEvent.setPosition ?: 0
             val setData = sets[setNumber]
 
             when (currentEvent.type) {
@@ -239,21 +257,109 @@ class ExerciseExecutionComponent(
         exitLoop: Boolean = false
     ) {
         val state = _exerciseExecutionState.value ?: return
-        val currentEvent = state.currentEvent()
-        val currentEventIndex = state.eventIndex
+        val nextDestination = findNextDestination(state, exitLoop)
 
-        if (currentEventIndex + 1 >= state.events.size) {
+        if (nextDestination == null) {
+            // Build tracking data from tracker
+            val performedExerciseData = tracker.buildData()
+
+            // Save to database and sync to server
+            scope.launch {
+                val result = performedExerciseRepository.createPerformedExercise(performedExerciseData)
+                result.onSuccess { performedExercise ->
+                    println("Successfully saved performed exercise: ${performedExercise.id}")
+                }.onFailure { error ->
+                    println("Error saving performed exercise: ${error.message}")
+                }
+            }
+
             onFinish()
             return
         }
 
-        if (currentEvent.type == ExerciseEventType.LOOP) {
-            // todo: handle loop in the future
-            return
+        handleNextEvent(nextDestination)
+    }
+
+    private fun findNextDestination(
+        state: ExerciseExecutionState,
+        exitLoop: Boolean
+    ): NextDestination? {
+        if (state.events.isEmpty()) return null
+
+        val parentEvent = state.events[state.eventIndex]
+        val isLoopEvent = parentEvent.type == ExerciseEventType.LOOP
+
+        if (state.loopIndex != null && !isLoopEvent) {
+            return getNextSequentialEvent(state)
         }
 
-        val nextEvent = state.events[currentEventIndex + 1]
-        handleNextEvent(currentEventIndex + 1, nextEvent)
+        return when {
+            isLoopEvent && state.loopIndex != null -> getNextLoopEvent(state, parentEvent, exitLoop)
+            isLoopEvent -> startLoop(state, parentEvent, exitLoop)
+            else -> getNextSequentialEvent(state)
+        }
+    }
+
+    private fun getNextLoopEvent(
+        state: ExerciseExecutionState,
+        loopEvent: ExerciseEvent,
+        exitLoop: Boolean
+    ): NextDestination? {
+        if (exitLoop) {
+            return getNextSequentialEvent(state)
+        }
+
+        val loopEvents = loopEvent.loop.orEmpty()
+        if (loopEvents.isEmpty()) {
+            return getNextSequentialEvent(state)
+        }
+
+        val currentLoopIndex = state.loopIndex ?: 0
+        val nextLoopIndex = if (currentLoopIndex + 1 >= loopEvents.size) {
+            0
+        } else {
+            currentLoopIndex + 1
+        }
+
+        val nextLoopEvent = loopEvents[nextLoopIndex]
+        return NextDestination.Loop(
+            parentIndex = state.eventIndex,
+            loopIndex = nextLoopIndex,
+            event = nextLoopEvent
+        )
+    }
+
+    private fun startLoop(
+        state: ExerciseExecutionState,
+        loopEvent: ExerciseEvent,
+        exitLoop: Boolean
+    ): NextDestination? {
+        if (exitLoop) {
+            return getNextSequentialEvent(state)
+        }
+
+        val loopEvents = loopEvent.loop.orEmpty()
+        if (loopEvents.isEmpty()) {
+            return getNextSequentialEvent(state)
+        }
+
+        return NextDestination.Loop(
+            parentIndex = state.eventIndex,
+            loopIndex = 0,
+            event = loopEvents.first()
+        )
+    }
+
+    private fun getNextSequentialEvent(state: ExerciseExecutionState): NextDestination? {
+        val nextIndex = state.eventIndex + 1
+        if (nextIndex >= state.events.size) {
+            return null
+        }
+
+        return NextDestination.Event(
+            index = nextIndex,
+            event = state.events[nextIndex]
+        )
     }
 
     fun pause() {
@@ -279,55 +385,90 @@ class ExerciseExecutionComponent(
     }
 
     private fun handleNextEvent(
-        nextEventIndex: Int,
-        nextEvent: ExerciseEvent,
+        destination: NextDestination,
     ) {
         val currentState = _exerciseExecutionState.value ?: return
-
-
-        // update tracker based on known info
-        currentState.currentEvent().setNumber?.let { setNumber ->
-            if (currentState.isEffort()) {
-                tracker.updateSet(
-                    setNumber = setNumber,
-                    effortDurationSec = getTimerDuration(currentState)
-                )
+        val nextEvent = destination.let {
+            when (it) {
+                is NextDestination.Event -> it.event
+                is NextDestination.Loop -> it.event
             }
-
-            tracker.updateSet(setNumber, completedAt = Clock.System.now())
         }
 
-        println("DEBUG: next event: ${nextEvent.toString()}")
+        val isLoopPlaceholder =
+            currentState.events.getOrNull(currentState.eventIndex)?.type == ExerciseEventType.LOOP && currentState.loopIndex == null
+
+        // update tracker based on known info
+        if (!isLoopPlaceholder) {
+            currentState.currentEvent().setPosition?.let { setPosition ->
+                if (currentState.isEffort()) {
+                    tracker.updateSet(
+                        setPosition = setPosition,
+                        effortDurationSec = getTimerDuration(currentState)
+                    )
+                }
+
+                tracker.updateSet(setPosition, completedAt = Clock.System.now())
+            }
+        }
+
+        println("DEBUG: next event: ${nextEvent.toString()} current set = ${currentState.currentSet()} exercise = ${currentState.exercise}")
         cleanTimers()
 
         val nextTimer = getTimerModeForEvent(nextEvent)
         val nextCurrentRep = when {
-            nextEvent.type == ExerciseEventType.ASK_REP -> currentState.currentReps?.plus(1) ?: 0
+            nextEvent.type == ExerciseEventType.ASK_REP -> currentState.currentReps?.plus(1)
+                ?: currentState.currentSet()?.repetitions ?: 0
+
             nextEvent.repetitionNumber == 1 && nextEvent.type == ExerciseEventType.EFFORT -> 0
             nextEvent.repetitionNumber != null && nextEvent.type == ExerciseEventType.REST_REP -> nextEvent.repetitionNumber
             !listOf(
                 ExerciseEventType.ASK_REP,
                 ExerciseEventType.EFFORT,
-                ExerciseEventType.WAIT_EFFORT).contains(nextEvent.type) -> null
+                ExerciseEventType.WAIT_EFFORT
+            ).contains(nextEvent.type) -> null
+
             else -> currentState.currentReps
         }
 
 
-        currentState.currentEvent().setNumber?.let { setNumber ->
+        currentState.currentEvent().setPosition?.let { setNumber ->
             if (nextCurrentRep != null) {
                 tracker.updateSet(
-                    setNumber = setNumber,
+                    setPosition = setNumber,
                     repetitions = nextCurrentRep
+                )
+            }
+            if (nextEvent.type == ExerciseEventType.ASK_HOLD_SIZE) {
+                tracker.updateSet(
+                    setPosition = setNumber,
+                    holdSizeMillimeters = exerciseExecutionState.value?.currentSet()?.holdSizeMillimeters
+                )
+            }
+            if (nextEvent.type == ExerciseEventType.ASK_DISTANCE) {
+                tracker.updateSet(
+                    setPosition = setNumber,
+                    distanceInMeters = exerciseExecutionState.value?.currentSet()?.distanceInMeters
                 )
             }
         }
 
 
-        val newState = currentState.copy(
-            eventIndex = nextEventIndex,
-            timerMode = nextTimer,
-            currentReps = nextCurrentRep
-        )
+        val newState = when (destination) {
+            is NextDestination.Event -> currentState.copy(
+                eventIndex = destination.index,
+                loopIndex = null,
+                timerMode = nextTimer,
+                currentReps = nextCurrentRep
+            )
+
+            is NextDestination.Loop -> currentState.copy(
+                eventIndex = destination.parentIndex,
+                loopIndex = destination.loopIndex,
+                timerMode = nextTimer,
+                currentReps = nextCurrentRep
+            )
+        }
 
 
         _exerciseExecutionState.value = newState

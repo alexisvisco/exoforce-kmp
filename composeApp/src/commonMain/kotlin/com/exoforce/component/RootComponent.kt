@@ -11,6 +11,7 @@ import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.arkivanov.decompose.value.Value
 import com.exoforce.component.onboarding.OnboardingComponent
 import com.exoforce.data.repository.AuthRepository
+import com.exoforce.data.repository.PerformedExerciseRepository
 import com.exoforce.data.repository.UserRepository
 import com.exoforce.data.repository.WorkoutRepository
 import com.exoforce.data.repository.WorkoutSessionRepository
@@ -26,6 +27,7 @@ class RootComponent(
     private val userRepository: UserRepository by inject()
     private val workoutRepository: WorkoutRepository by inject()
     private val workoutSessionRepository: WorkoutSessionRepository by inject()
+    private val performedExerciseRepository: PerformedExerciseRepository by inject()
 
     private val navigation = StackNavigation<Config>()
 
@@ -53,6 +55,7 @@ class RootComponent(
                     userRepository = userRepository,
                     workoutRepository = workoutRepository,
                     workoutSessionRepository = workoutSessionRepository,
+                    performedExerciseRepository = performedExerciseRepository,
                     onNavigateToWorkoutSession = { workoutId ->
                         navigation.push(Config.WorkoutSession(workoutId))
                     }
@@ -65,6 +68,7 @@ class RootComponent(
                     workoutId = config.workoutId,
                     workoutRepository = workoutRepository,
                     workoutSessionRepository = workoutSessionRepository,
+                    performedExerciseRepository = performedExerciseRepository,
                     onBack = { navigation.pop() },
                     goToExerciseExecution = { exerciseId ->
                         navigation.push(Config.ExerciseExecution(config.workoutId, exerciseId))
@@ -79,6 +83,7 @@ class RootComponent(
                     exerciseId = config.exerciseId,
                     workoutRepository = workoutRepository,
                     workoutSessionRepository = workoutSessionRepository,
+                    performedExerciseRepository = performedExerciseRepository,
                     onBack = { navigation.pop() },
                     onFinish = {
                         navigation.push(Config.ExerciseExecutionFinish(config.workoutId, config.exerciseId))

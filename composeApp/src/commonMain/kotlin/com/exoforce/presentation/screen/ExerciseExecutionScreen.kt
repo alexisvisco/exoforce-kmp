@@ -2,6 +2,7 @@ package com.exoforce.presentation.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,6 +55,7 @@ import com.exoforce.core.theme.AppTheme
 import com.exoforce.core.theme.Icons
 import com.exoforce.data.domain.Exercise
 import com.exoforce.data.domain.ExerciseEventType
+import com.exoforce.data.domain.ExerciseSet
 import com.exoforce.data.domain.PreviewExerciseSquat
 import com.exoforce.data.domain.buildExerciseEvents
 import com.exoforce.presentation.component.base.AppButton
@@ -64,6 +66,7 @@ import com.exoforce.presentation.component.exercise.InputNotes
 import com.exoforce.presentation.component.exercise.InputRPE
 import com.exoforce.presentation.component.exercise.InputRep
 import com.exoforce.presentation.component.exercise.InputWeight
+import com.exoforce.presentation.component.exercise.MetricChip
 import com.exoforce.presentation.component.exercise.SetProgressBar
 import com.exoforce.presentation.component.exercise.TimerGauge
 import exoforce.composeapp.generated.resources.Res
@@ -126,7 +129,7 @@ fun ExerciseExecutionScreen(
         exercise.buildExerciseEvents(10)
     }
 
-    val setNumber = exerciseExecutionState.currentEvent().setNumber ?: 0
+    val setNumber = exerciseExecutionState.currentEvent().setPosition ?: 0
 
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = false
@@ -296,7 +299,10 @@ fun ExerciseExecutionScreen(
                         InputHoldSize(
                             defaultValue = exerciseExecutionState.currentSet()?.holdSizeMillimeters?.toString() ?: "",
                             onValueChange = { value ->
-                                exerciseExecutionTracker?.updateSet(setNumber, holdSizeMillimeters = value.toIntOrNull())
+                                exerciseExecutionTracker?.updateSet(
+                                    setNumber,
+                                    holdSizeMillimeters = value.toIntOrNull()
+                                )
                             }
                         )
                     }
@@ -306,7 +312,10 @@ fun ExerciseExecutionScreen(
                         InputDistance(
                             defaultValue = exerciseExecutionState.currentSet()?.distanceInMeters?.toString() ?: "",
                             onValueChange = { value ->
-                                exerciseExecutionTracker?.updateSet(setNumber, distanceInMeters = value.toDoubleOrNull())
+                                exerciseExecutionTracker?.updateSet(
+                                    setNumber,
+                                    distanceInMeters = value.toDoubleOrNull()
+                                )
                             }
                         )
                     }
@@ -383,11 +392,37 @@ fun ExerciseExecutionScreen(
             }
 
             if (timerState.mode != TimerMode.NONE) {
-                TimerGauge(
-                    timerState = timerState,
-                    totalDuration = timerState.totalSeconds
-                )
+                Column {
+                    TimerGauge(
+                        timerState = timerState,
+                        totalDuration = timerState.totalSeconds
+                    )
+                    Spacer(modifier = Modifier.size(16.dp))
+                    Text(
+                        text = when {
+                            exerciseExecutionState.currentSet()?.asManyAsPossibleRepetitions == true -> "Effectuez autant de répétitions que possible"
+                            exerciseExecutionState.currentSet()?.asManyAsPossibleDuration == true -> "Tenez le plus longtemps possible"
+                            exerciseExecutionState.currentEvent().type == ExerciseEventType.REST_REP -> "Repos avant la prochaine répétition"
+                            exerciseExecutionState.currentEvent().type == ExerciseEventType.REST_SET -> "Repos avant la prochaine série"
+                            exerciseExecutionState.currentEvent().type == ExerciseEventType.REST_EXERCISE -> "Repos avant le prochain exercice"
+                            exerciseExecutionState.currentEvent().type == ExerciseEventType.EFFORT ||
+                                    exerciseExecutionState.currentEvent().type == ExerciseEventType.WAIT_EFFORT
+                                -> "Donnez tout ce que vous avez !"
+
+                            else -> "Restez concentré et donnez le meilleur de vous-même !"
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
             }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            ObjectiveMetricChips(
+                exerciseExecutionState = exerciseExecutionState
+            )
 
         }
     }
@@ -437,6 +472,153 @@ fun BottomSheetDescriptionExercise(exercise: Exercise) {
             style = MaterialTheme.typography.bodyMedium,
             lineHeight = 24.sp
         )
+    }
+}
+
+@Composable
+fun ObjectiveMetricChips(
+    exerciseExecutionState: ExerciseExecutionState
+) {
+    val currentEvent = exerciseExecutionState.currentEvent()
+    val currentSet = exerciseExecutionState.currentSet() ?: return
+
+    // Determine if we should show next set objectives (during rest/prepare)
+    val shouldShowNextSetObjectives = when (currentEvent.type) {
+        ExerciseEventType.REST_SET,
+        ExerciseEventType.PREPARE_COUNTDOWN -> true
+
+        else -> false
+    }
+
+    // Get the target set (next set during rest, current set otherwise)
+    val targetSet = if (shouldShowNextSetObjectives) {
+        val nextSetNumber = (currentEvent.setPosition ?: 0) + 1
+        exerciseExecutionState.exercise.sets.find { it.position == nextSetNumber } ?: currentSet
+    } else {
+        currentSet
+    }
+
+    // Determine if we should show current progress
+    val showCurrentProgress = when (currentEvent.type) {
+        ExerciseEventType.EFFORT,
+        ExerciseEventType.WAIT_EFFORT,
+        ExerciseEventType.REST_REP -> true
+
+        else -> false
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 16.dp)
+    ) {
+        if (shouldShowNextSetObjectives) {
+            Text(
+                text = "Prochaine série",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Repetitions chip
+            RepMetricChip(
+                set = targetSet,
+                showCurrentProgress = showCurrentProgress,
+                currentReps = exerciseExecutionState.currentReps
+            )
+
+            // Weight chip
+            if (targetSet.weightKg > 0.0) {
+                MetricChip(
+                    icon = Icons.Weight,
+                    label = "${targetSet.weightKg} kg",
+                    subtitle = "Poids"
+                )
+            }
+
+            // Distance chip
+            if (targetSet.distanceInMeters > 0.0) {
+                MetricChip(
+                    icon = Icons.Run,
+                    label = "${targetSet.distanceInMeters} m",
+                    subtitle = "Distance"
+                )
+            }
+
+            // Hold size chip
+            if (targetSet.holdSizeMillimeters > 0) {
+                MetricChip(
+                    icon = Icons.Ruler,
+                    label = "${targetSet.holdSizeMillimeters} mm",
+                    subtitle = "Taille de prise"
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun RepMetricChip(
+    set: ExerciseSet,
+    showCurrentProgress: Boolean = false,
+    currentReps: Int? = null
+) {
+    val totalReps = set.totalRepetitions()
+
+    // Exit early if no repetitions defined
+    if (totalReps is ExerciseSet.Repetitions.Fixed && totalReps.count == 0) {
+        return
+    }
+
+    when {
+        // AMRAP - show infinite symbol
+        totalReps is ExerciseSet.Repetitions.Infinite -> {
+            MetricChip(
+                icon = Icons.Repeat,
+                label = "∞",
+                subtitle = "Répétitions"
+            )
+        }
+
+        // EMOM - show both current progress and target per minute
+        set.everyMinuteOnTheMinute && totalReps is ExerciseSet.Repetitions.Fixed -> {
+            if (showCurrentProgress && currentReps != null) {
+                // Show current reps completed
+                MetricChip(
+                    icon = Icons.Repeat,
+                    label = "$currentReps",
+                    subtitle = "Répétitions effectuées"
+                )
+            }
+            // Show target reps per minute
+            MetricChip(
+                icon = Icons.Repeat,
+                label = "${set.repetitions}",
+                subtitle = "par minute"
+            )
+        }
+
+        // Standard/Repeater - show based on showCurrentProgress flag
+        totalReps is ExerciseSet.Repetitions.Fixed -> {
+            val label = if (showCurrentProgress && currentReps != null) {
+                "$currentReps/${set.repetitions}"
+            } else {
+                "${set.repetitions}"
+            }
+
+            MetricChip(
+                icon = Icons.Repeat,
+                label = label,
+                subtitle = "Répétitions"
+            )
+        }
     }
 }
 

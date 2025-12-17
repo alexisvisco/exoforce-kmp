@@ -3,6 +3,7 @@ package com.exoforce.di
 import com.exoforce.core.network.createHttpClient
 import com.exoforce.data.local.Database
 import com.exoforce.data.local.ExerciseLocalDataSource
+import com.exoforce.data.local.PerformedExerciseLocalDataSource
 import com.exoforce.data.local.TokenStorage
 import com.exoforce.data.local.UserLocalDataSource
 import com.exoforce.data.local.WorkoutLocalDataSource
@@ -12,6 +13,7 @@ import com.exoforce.data.remote.PerformedExerciseClient
 import com.exoforce.data.remote.UserClient
 import com.exoforce.data.remote.WorkoutClient
 import com.exoforce.data.repository.AuthRepository
+import com.exoforce.data.repository.PerformedExerciseRepository
 import com.exoforce.data.repository.UserRepository
 import com.exoforce.data.repository.WorkoutRepository
 import com.exoforce.data.repository.WorkoutSessionRepository
@@ -38,16 +40,19 @@ val appModule = module {
     singleOf(::AuthRepository)
     singleOf(::WorkoutRepository)
     singleOf(::WorkoutSessionRepository)
+    singleOf(::PerformedExerciseRepository)
 
     single { get<Database>().userDao() }
     single { get<Database>().workoutDao() }
     single { get<Database>().exerciseDao() }
     single { get<Database>().workoutSessionDao() }
+    single { get<Database>().performedExerciseDao() }
 
     single { UserLocalDataSource(get()) }
     single { WorkoutLocalDataSource(get(), get()) }
     single { ExerciseLocalDataSource(get()) }
     single { WorkoutSessionLocalDataSource(get()) }
+    single { PerformedExerciseLocalDataSource(get()) }
 }
 
 fun initKoin(cfg: KoinAppDeclaration? = null) {

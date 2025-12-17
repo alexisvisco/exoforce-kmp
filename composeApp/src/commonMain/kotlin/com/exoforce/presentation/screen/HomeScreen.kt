@@ -91,6 +91,10 @@ fun HomeScreen(component: HomeComponent) {
         currentWorkout?.let { component.getWorkoutSession(it.id) }
     }?.collectAsState(initial = null)?.value
 
+    val exerciseIdsCompleted = remember(currentWorkout?.id) {
+        currentWorkout?.let { component.getExerciseIdsCompleted(it.id) }
+    }?.collectAsState(initial = emptySet())?.value ?: emptySet()
+
     LaunchedEffect(hasShownIntro) {
         if (!hasShownIntro) {
             // Animation du logo qui grossit puis disparaît
@@ -150,6 +154,7 @@ fun HomeScreen(component: HomeComponent) {
                         selectedDate,
                         days,
                         hasSession = session != null,
+                        exerciseIdsCompleted = exerciseIdsCompleted,
                         updateSelectedDate = component::updateSelectedDate,
                         onStartWorkoutSession = component::startWorkoutSession
                     )
@@ -178,6 +183,7 @@ fun HomeContent(
     selectedDate: DayMonthYear = DayMonthYear.today(),
     weekDates: List<DayMonthYear> = emptyList(),
     hasSession: Boolean = false,
+    exerciseIdsCompleted: Set<String> = emptySet(),
     updateSelectedDate: (date: DayMonthYear) -> Unit = {},
     onStartWorkoutSession: (String) -> Unit = {}
 ) {
@@ -262,6 +268,7 @@ fun HomeContent(
             WorkoutExercises(
                 workout = currentWorkout,
                 isLoading = workouts is DataState.Loading,
+                exerciseIdsCompleted = exerciseIdsCompleted,
             )
         } else {
             Box(

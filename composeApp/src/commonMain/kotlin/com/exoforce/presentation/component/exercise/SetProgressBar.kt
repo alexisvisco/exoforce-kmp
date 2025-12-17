@@ -37,8 +37,8 @@ fun SetProgressBar(
     val finishEvents = exerciseEvents.filter { it.kind == ExerciseEventKind.FINISH }
 
     val currentEvent = exerciseEvents.getOrNull(currentEventIndex)
-    val currentSetNumber = currentEvent?.setNumber ?: 1
-    val totalSets = setsEvents.maxOfOrNull { it.setNumber ?: 0 } ?: 0
+    val currentSetNumber = currentEvent?.setPosition ?: 1
+    val totalSets = setsEvents.maxOfOrNull { it.setPosition ?: 0 } ?: 0
 
     // Determine current phase and progress
     data class PhaseProgress(val phase: String, val progress: Float)
@@ -68,7 +68,7 @@ fun SetProgressBar(
 
     // Calculate progress for each set
     fun getSetProgress(setNumber: Int): Float {
-        val setEvents = setsEvents.filter { it.setNumber == setNumber }
+        val setEvents = setsEvents.filter { it.setPosition == setNumber }
         if (setEvents.isEmpty()) return 0f
 
         // If we haven't reached this set yet
@@ -83,7 +83,7 @@ fun SetProgressBar(
                 .mapIndexed { index, event ->
                     Triple(event, exerciseEvents.indexOf(event), index)
                 }
-                .filter { it.first.setNumber == setNumber }
+                .filter { it.first.setPosition == setNumber }
 
             val currentSetEventIndex = setEventIndices.indexOfFirst {
                 it.second == currentEventIndex

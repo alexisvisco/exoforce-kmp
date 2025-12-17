@@ -6,16 +6,20 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlin.time.Clock
-import kotlin.time.Instant
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
+/**
+ * A simple stopwatch timer that tracks elapsed time in seconds.
+ * Can be started, paused, resumed, and reset.
+ */
 class StopwatchTimer(
     private val scope: CoroutineScope,
     private val updateIntervalMs: Long = 100
 ) {
     private var timerJob: Job? = null
     private var startedAt: Instant? = null
+    private var accumulatedSeconds: Int = 0
 
     private val _elapsedSeconds = MutableStateFlow(0)
     val elapsedSeconds: StateFlow<Int> = _elapsedSeconds
@@ -23,61 +27,88 @@ class StopwatchTimer(
     private val _isPaused = MutableStateFlow(true)
     val isPaused: StateFlow<Boolean> = _isPaused
 
-    fun start(initialSeconds: Int = 0, resumeInstant: Instant? = Clock.System.now()) {
-        println("DEBUG StopwatchTimer: start() called with initialSeconds=$initialSeconds, resumeInstant=$resumeInstant")
+    /**
+     * Start the timer with initial seconds and optional
+    resume instant.
+     * If resumeInstant is null, timer starts in paused state.
+     * If resumeInstant is provided, timer starts running from that instant.
+     */
+    fun start(initialSeconds: Int = 0, resumeInstant: Instant? = null) {
         timerJob?.cancel()
+        accumulatedSeconds = initialSeconds
+        _elapsedSeconds.value = initialSeconds
+
         if (resumeInstant == null) {
             startedAt = null
-            _elapsedSeconds.value = initialSeconds
             _isPaused.value = true
-            println("DEBUG StopwatchTimer: start() with null resumeInstant, setting paused=true")
             return
         }
+
         startedAt = resumeInstant - initialSeconds.seconds
-        _elapsedSeconds.value = initialSeconds
         _isPaused.value = false
-        println("DEBUG StopwatchTimer: start() starting timer, elapsedSeconds=${_elapsedSeconds.value}, isPaused=${_isPaused.value}")
-        startTimer()
+        startTimerJob()
     }
 
+    /**
+     * Pause the timer, keeping accumulated time.
+     */
     fun pause() {
+        if (_isPaused.value) return
+
         updateElapsedTime()
         timerJob?.cancel()
         timerJob = null
         startedAt = null
-        _isPaused.value = true
+        accumulatedSeconds = _elapsedSeconds.value
         _isPaused.value = true
     }
 
-    fun resume(resumeInstant: Instant = Clock.System.now()) {
-        if (!isPaused.value) return
-        start(totalSeconds(), resumeInstant)
+    /**
+     * Resume the timer from paused state.
+     */
+    fun resume(resumeInstant: Instant = kotlin.time.Clock.System.now()) {
+        if (!_isPaused.value) return
+
+        startedAt = resumeInstant - accumulatedSeconds.seconds
+        _isPaused.value = false
+        startTimerJob()
     }
 
+    /**
+     * Get total elapsed seconds.
+     */
     fun totalSeconds(): Int {
-        updateElapsedTime()
+        if (!_isPaused.value) {
+            updateElapsedTime()
+        }
         return _elapsedSeconds.value
     }
 
+    /**
+     * Reset timer to zero.
+     */
     fun reset() {
-        pause()
+        timerJob?.cancel()
+        timerJob = null
+        startedAt = null
+        accumulatedSeconds = 0
         _elapsedSeconds.value = 0
-        _elapsedSeconds.value = 0
+        _isPaused.value = true
     }
 
     private fun updateElapsedTime() {
         val anchor = startedAt ?: return
-        val elapsed = (Clock.System.now() - anchor).inWholeSeconds.toInt()
+        val now = kotlin.time.Clock.System.now()
+        val elapsed = (now - anchor).inWholeSeconds.toInt()
+
         if (_elapsedSeconds.value != elapsed) {
             _elapsedSeconds.value = elapsed
-            _elapsedSeconds.value = elapsed
-        } else {
-            _elapsedSeconds.value = elapsed
-            _elapsedSeconds.value = elapsed
+            accumulatedSeconds = elapsed
         }
     }
 
-    private fun startTimer() {
+    private fun startTimerJob() {
+        timerJob?.cancel()
         timerJob = scope.launch {
             while (true) {
                 delay(updateIntervalMs)
@@ -87,12 +118,7 @@ class StopwatchTimer(
     }
 
     fun cleanup() {
-        println("DEBUG StopwatchTimer: cleanup() called, current elapsedSeconds=${_elapsedSeconds.value}, isPaused=${_isPaused.value}")
         timerJob?.cancel()
         timerJob = null
-        startedAt = null
-        _elapsedSeconds.value = 0
-        _isPaused.value = true
-        println("DEBUG StopwatchTimer: cleanup() done, elapsedSeconds=${_elapsedSeconds.value}, isPaused=${_isPaused.value}")
     }
 }

@@ -10,7 +10,6 @@ import exoforce.composeapp.generated.resources.exercise_classification_kind_glob
 import exoforce.composeapp.generated.resources.exercise_classification_kind_major_muscle
 import exoforce.composeapp.generated.resources.exercise_classification_kind_specific_capacity
 import exoforce.composeapp.generated.resources.exercise_classification_kind_specific_zone
-import kotlin.time.Instant
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -20,6 +19,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Instant
 
 
 data class Exercise(
@@ -85,7 +85,6 @@ data class ExerciseSet(
     val restBetweenRepsSec: Int,
     val restAfterSetSec: Int,
     val totalDurationSec: Int,
-
     val repetitions: Int,
     val asManyAsPossibleRepetitions: Boolean,
     val asManyAsPossibleDuration: Boolean,
@@ -94,6 +93,7 @@ data class ExerciseSet(
     val weightKg: Double,
     val distanceInMeters: Double,
     val percentage1RM: Double,
+    val bodyWeightPercentage: Double,
     val holdSizeMillimeters: Int,
 
     val notes: String,

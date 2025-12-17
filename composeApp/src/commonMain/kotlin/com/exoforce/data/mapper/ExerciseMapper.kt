@@ -4,6 +4,7 @@ import com.exoforce.data.domain.Exercise
 import com.exoforce.data.domain.ExerciseClassification
 import com.exoforce.data.domain.ExerciseClassificationKind
 import com.exoforce.data.domain.ExerciseSet
+import com.exoforce.data.domain.User
 import com.exoforce.data.local.ExerciseClassificationEntity
 import com.exoforce.data.local.ExerciseEntity
 import com.exoforce.data.local.ExerciseSetEntity
@@ -58,6 +59,7 @@ fun RemoteExerciseSet.toDomain(): ExerciseSet {
         distanceInMeters = this.distanceInMeters,
         percentage1RM = this.percentage1RM,
         holdSizeMillimeters = this.holdSizeMillimeters,
+        bodyWeightPercentage = this.bodyWeightPercentage,
         notes = this.notes,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
@@ -107,6 +109,7 @@ fun ExerciseSet.toEntity(): ExerciseSetEntity {
         distanceInMeters = this.distanceInMeters,
         percentage1RM = this.percentage1RM,
         holdSizeMillimeters = this.holdSizeMillimeters,
+        bodyWeightPercentage = this.bodyWeightPercentage,
         notes = this.notes,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
@@ -124,7 +127,7 @@ fun Exercise.toEntityWithRelations(): ExerciseWithRelations {
 
 // Entity -> Domain
 fun ExerciseEntity.toDomain(
-    user: com.exoforce.data.domain.User? = null,
+    user: User? = null,
     sets: List<ExerciseSet> = emptyList(),
     classifications: List<ExerciseClassification> = emptyList()
 ): Exercise {
@@ -175,7 +178,8 @@ fun ExerciseSetEntity.toDomain(): ExerciseSet {
         holdSizeMillimeters = this.holdSizeMillimeters,
         notes = this.notes,
         createdAt = this.createdAt,
-        updatedAt = this.updatedAt
+        updatedAt = this.updatedAt,
+        bodyWeightPercentage = this.bodyWeightPercentage,
     )
 }
 

@@ -18,8 +18,10 @@ import com.exoforce.core.utils.InstantConverters
         WorkoutExerciseCrossRef::class,
         ExerciseClassificationCrossRef::class,
         WorkoutSessionEntity::class,
+        PerformedExerciseEntity::class,
+        PerformedExerciseSetEntity::class,
     ],
-    version = 4,
+    version = 6,
     exportSchema = true,
 )
 @ConstructedBy(DatabaseConstructor::class)
@@ -33,6 +35,7 @@ abstract class Database : RoomDatabase() {
     abstract fun exerciseDao(): ExerciseDao
 
     abstract fun workoutSessionDao(): WorkoutSessionDao
+    abstract fun performedExerciseDao(): PerformedExerciseDao
 
     companion object Companion {
         const val NAME = "exoforce.db"

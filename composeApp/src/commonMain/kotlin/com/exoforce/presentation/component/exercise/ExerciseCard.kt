@@ -111,7 +111,7 @@ fun ExerciseItem(
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .then(
-                if (onClick != null) {
+                if (onClick != null && !isCompleted) {
                     Modifier.clickable { onClick(exercise) }
                 } else {
                     Modifier
@@ -527,45 +527,6 @@ fun SetDetail(value: String, unit: String) {
     }
 }
 
-@Composable
-fun MetricChip(
-    icon: Painter,
-    label: String,
-    subtitle: String
-) {
-    Surface(
-        shape = RoundedCornerShape(10.dp),
-        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                painter = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(18.dp)
-            )
-            Column {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    fontSize = 14.sp
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                    fontSize = 10.sp
-                )
-            }
-        }
-    }
-}
 
 @Composable
 fun ClassificationChip(ec: ExerciseClassification) {
