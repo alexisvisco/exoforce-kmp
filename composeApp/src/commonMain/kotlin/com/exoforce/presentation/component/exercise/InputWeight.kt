@@ -35,7 +35,23 @@ fun InputWeight(
     placeholder: String = "0",
     unit: String = "kg"
 ) {
-    var value by remember { mutableStateOf(defaultValue ?: "") }
+    // Format the default value: remove unnecessary decimals (8.0 -> 8, but keep 8.2 -> 8.2)
+    val formattedDefaultValue = defaultValue?.toDoubleOrNull()?.let { weight ->
+        if (weight % 1.0 == 0.0) {
+            weight.toInt().toString()
+        } else {
+            weight.toString()
+        }
+    } ?: ""
+
+    var value by remember {
+        mutableStateOf(formattedDefaultValue).also {
+            // Initialize tracker with the default value if present
+            if (formattedDefaultValue.isNotEmpty()) {
+                onValueChange(formattedDefaultValue)
+            }
+        }
+    }
 
     Column(
         modifier = modifier

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -70,36 +71,42 @@ fun ExerciseExecutionFinishScreen(
         }
     }
 
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background
+    ) { paddingValues ->
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "Bien joué !",
-                style = MaterialTheme.typography.headlineMedium
-            )
-            // Lottie animation
-            Image(
-                painter = painter,
-                contentDescription = "Good job animation",
-                modifier = Modifier.size(300.dp)
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Bien joué !",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+                // Lottie animation
+                Image(
+                    painter = painter,
+                    contentDescription = "Good job animation",
+                    modifier = Modifier.size(300.dp)
+                )
 
-            Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-            // Finish button
-            AppButton(
-                onClick = onFinish,
-                text = "Terminer !",
-                modifier = Modifier.fillMaxWidth()
-            )
+                // Finish button
+                AppButton(
+                    onClick = onFinish,
+                    text = "Terminer !",
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     }
 }

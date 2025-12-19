@@ -9,12 +9,14 @@ import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.arkivanov.decompose.value.Value
+import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.exoforce.component.onboarding.OnboardingComponent
 import com.exoforce.data.repository.AuthRepository
 import com.exoforce.data.repository.PerformedExerciseRepository
 import com.exoforce.data.repository.UserRepository
 import com.exoforce.data.repository.WorkoutRepository
 import com.exoforce.data.repository.WorkoutSessionRepository
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -29,7 +31,20 @@ class RootComponent(
     private val workoutSessionRepository: WorkoutSessionRepository by inject()
     private val performedExerciseRepository: PerformedExerciseRepository by inject()
 
+    private val scope = coroutineScope()
     private val navigation = StackNavigation<Config>()
+
+    // init {
+    //     // Cleanup performed exercises once at startup
+    //     scope.launch {
+    //         try {
+    //             performedExerciseRepository.cleanupAllPerformedExercises()
+    //             println("Database cleanup: All performed exercises deleted")
+    //         } catch (e: Exception) {
+    //             println("Database cleanup failed: ${e.message}")
+    //         }
+    //     }
+    // }
 
     val stack: Value<ChildStack<*, Child>> = childStack(
         source = navigation,

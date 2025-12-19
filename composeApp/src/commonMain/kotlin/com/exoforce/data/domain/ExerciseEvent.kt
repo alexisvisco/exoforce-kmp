@@ -204,6 +204,17 @@ fun Exercise.buildExerciseEvents(countDownSec: Int? = 5): List<ExerciseEvent> {
                 )
             }
 
+            set.totalDurationSec > 0 -> {
+                events.add(
+                    ExerciseEvent(
+                        type = effortTypeSet,
+                        kind = ExerciseEventKind.SETS,
+                        durationSec = totalDurationSec,
+                        setPosition = setNumber
+                    )
+                )
+            }
+
             else -> {
                 events.add(
                     ExerciseEvent(

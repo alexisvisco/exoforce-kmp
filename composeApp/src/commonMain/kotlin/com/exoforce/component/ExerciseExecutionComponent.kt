@@ -380,7 +380,9 @@ class ExerciseExecutionComponent(
 
 
     fun back() {
-        cleanTimers()
+        // Fully cleanup timers when exiting
+        timer.cleanup()
+        stopWatch.cleanup()
         onBack()
     }
 
@@ -473,8 +475,10 @@ class ExerciseExecutionComponent(
 
         _exerciseExecutionState.value = newState
 
+        println("DEBUG handleNextEvent: nextTimer=$nextTimer for event type=${nextEvent.type}")
         when (nextTimer) {
             TimerMode.COUNTDOWN -> {
+                println("DEBUG handleNextEvent: starting countdown timer for ${nextEvent.durationSec} seconds")
                 timer.start(
                     durationSeconds = nextEvent.durationSec ?: 0,
                     onComplete = { next() }
@@ -482,10 +486,13 @@ class ExerciseExecutionComponent(
             }
 
             TimerMode.STOPWATCH -> {
-                stopWatch.start()
+                println("DEBUG handleNextEvent: starting stopwatch timer")
+                stopWatch.start(resumeInstant = Clock.System.now())
             }
 
-            else -> {}
+            else -> {
+                println("DEBUG handleNextEvent: no timer for this event")
+            }
         }
 
     }
@@ -506,8 +513,17 @@ class ExerciseExecutionComponent(
         }
 
     private fun cleanTimers() {
-        timer.cleanup()
-        stopWatch.cleanup()
+        // Pause current timers to stop them cleanly
+        // The start() methods will handle creating new timers when needed
+        println("DEBUG cleanTimers: timer.isPaused=${timer.isPaused.value}, stopWatch.isPaused=${stopWatch.isPaused.value}")
+        if (!timer.isPaused.value) {
+            println("DEBUG cleanTimers: pausing countdown timer")
+            timer.pause()
+        }
+        if (!stopWatch.isPaused.value) {
+            println("DEBUG cleanTimers: pausing stopwatch timer")
+            stopWatch.pause()
+        }
     }
 
     private fun getTimerModeForEvent(event: ExerciseEvent): TimerMode {

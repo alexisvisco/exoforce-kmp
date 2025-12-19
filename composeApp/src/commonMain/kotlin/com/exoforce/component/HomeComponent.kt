@@ -13,6 +13,7 @@ import com.exoforce.data.repository.WorkoutSessionRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -108,13 +109,17 @@ class HomeComponent(
     }
 
     fun getExerciseIdsCompleted(workoutId: String): StateFlow<Set<String>> {
-        return kotlinx.coroutines.flow.flow {
-            val performedExercises = performedExerciseRepository.getPerformedExercisesByWorkoutId(workoutId)
-            emit(performedExercises.map { it.exerciseId }.toSet())
-        }.stateIn(
-            scope = scope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptySet()
-        )
+        // Refresh from server in background
+        scope.launch {
+            performedExerciseRepository.refreshPerformedExercisesByWorkoutId(workoutId)
+        }
+
+        return performedExerciseRepository.observePerformedExercisesByWorkoutId(workoutId)
+            .map { performedExercises -> performedExercises.map { exercise -> exercise.exerciseId }.toSet() }
+            .stateIn(
+                scope = scope,
+                started = SharingStarted.Eagerly,
+                initialValue = emptySet()
+            )
     }
 }

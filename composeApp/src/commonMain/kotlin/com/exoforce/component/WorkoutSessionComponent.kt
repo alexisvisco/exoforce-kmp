@@ -46,20 +46,25 @@ class WorkoutSessionComponent(
             initialValue = null
         )
 
-    val exerciseIdsCompleted: StateFlow<Set<String>> = scope.run {
-        kotlinx.coroutines.flow.flow {
-            val performedExercises = performedExerciseRepository.getPerformedExercisesByWorkoutId(workoutId)
-            emit(performedExercises.map { it.exerciseId }.toSet())
-        }.stateIn(
+    val exerciseIdsCompleted: StateFlow<Set<String>> = performedExerciseRepository
+        .observePerformedExercisesByWorkoutId(workoutId)
+        .map { performedExercises ->
+            performedExercises.map { it.exerciseId }.toSet()
+        }
+        .stateIn(
             scope = scope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Eagerly,
             initialValue = emptySet()
         )
-    }
 
     val elapsedSeconds = stopwatch.elapsedSeconds
 
     init {
+        // Refresh performed exercises from server in background
+        scope.launch {
+            performedExerciseRepository.refreshPerformedExercisesByWorkoutId(workoutId)
+        }
+
         // Load workout data
         workout.load(
             coroutineScope = scope,

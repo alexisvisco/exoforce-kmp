@@ -34,6 +34,7 @@ class StopwatchTimer(
      * If resumeInstant is provided, timer starts running from that instant.
      */
     fun start(initialSeconds: Int = 0, resumeInstant: Instant? = null) {
+        println("DEBUG StopwatchTimer: start() called with initialSeconds=$initialSeconds, resumeInstant=$resumeInstant")
         timerJob?.cancel()
         accumulatedSeconds = initialSeconds
         _elapsedSeconds.value = initialSeconds
@@ -41,12 +42,14 @@ class StopwatchTimer(
         if (resumeInstant == null) {
             startedAt = null
             _isPaused.value = true
+            println("DEBUG StopwatchTimer: start() done with NO resumeInstant, isPaused=${_isPaused.value}")
             return
         }
 
         startedAt = resumeInstant - initialSeconds.seconds
         _isPaused.value = false
         startTimerJob()
+        println("DEBUG StopwatchTimer: start() done with resumeInstant, isPaused=${_isPaused.value}")
     }
 
     /**

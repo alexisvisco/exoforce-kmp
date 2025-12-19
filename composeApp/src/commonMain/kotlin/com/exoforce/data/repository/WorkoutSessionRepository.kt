@@ -44,11 +44,8 @@ class WorkoutSessionRepository(
                 updatedAt = now
             )
             localDataSource.upsert(session.toEntity())
-            println("DEBUG: Created new workout session for workoutId=$workoutId")
             return session
         } catch (e: Exception) {
-            println("ERROR: Failed to create session: ${e.message}")
-            // Return a temporary session object that won't be persisted
             return WorkoutSession(
                 workoutId = workoutId,
                 startedAt = now,

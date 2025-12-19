@@ -148,7 +148,7 @@ fun ExerciseItem(
                                 painter = Icons.Checkmark,
                                 contentDescription = "Completed",
                                 tint = MaterialTheme.colorScheme.onTertiary,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(12.dp)
                             )
                         } else {
                             Text(
@@ -163,12 +163,18 @@ fun ExerciseItem(
 
                 // Title
                 Column(modifier = Modifier.weight(1f)) {
+                    // stroke if completed
                     Text(
                         text = exercise.title,
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            textDecoration = if (isCompleted) {
+                                androidx.compose.ui.text.style.TextDecoration.LineThrough
+                            } else null
+                        ),
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+
                     )
                 }
             }
@@ -195,7 +201,7 @@ fun ExerciseItem(
             val maxDistance = exercise.maxDistanceMeters()
             val minHoldSize = exercise.minHoldSizeMillimeters()
 
-            if (totalTime > 0 || totalReps > 0 || maxWeight != null || maxDistance != null || minHoldSize != null) {
+            if ((totalTime > 0 || totalReps > 0 || maxWeight != null || maxDistance != null || minHoldSize != null) && !isCompleted) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Row(

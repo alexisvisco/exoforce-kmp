@@ -37,7 +37,7 @@ class ExerciseExecutionTracker(
             exerciseSetId = existingSetFromExercise?.id,
             startedAt = Clock.System.now()
         ).also { newSetData ->
-            _sets.value = _sets.value + (setPosition to newSetData)
+            _sets.value += (setPosition to newSetData)
         }
     }
 
@@ -59,7 +59,7 @@ class ExerciseExecutionTracker(
             distanceInMeters = distanceInMeters ?: current.distanceInMeters,
             holdSizeMillimeters = holdSizeMillimeters ?: current.holdSizeMillimeters
         )
-        _sets.value = _sets.value + (setPosition to updated)
+        _sets.value += (setPosition to updated)
     }
 
     fun updateRpe(value: Int?) {

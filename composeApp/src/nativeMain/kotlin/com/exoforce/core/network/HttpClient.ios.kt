@@ -28,7 +28,7 @@ import platform.Foundation.NSLog
 actual fun createHttpClient(tokenStorage: TokenStorage): HttpClient {
 
     val baseUrl = NSBundle.mainBundle.objectForInfoDictionaryKey("BASE_URL") as? String
-        ?: "http://localhost:8181"
+        ?: "https://local-exoforce-api.alexisvis.co"
 
     return HttpClient(Darwin) {
         install(ContentNegotiation) {

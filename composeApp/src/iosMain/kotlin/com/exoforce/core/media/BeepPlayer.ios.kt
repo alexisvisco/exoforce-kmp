@@ -24,16 +24,19 @@ actual class BeepPlayer {
 
         playJob = scope.launch {
             try {
-                // Configure audio session to mix with other audio
+                // Configure audio session to play even in silent mode
                 memScoped {
                     val audioSession = AVAudioSession.sharedInstance()
                     val errorPtr = alloc<ObjCObjectVar<platform.Foundation.NSError?>>()
 
                     audioSession.setCategory(
-                        category = AVAudioSessionCategoryAmbient,
+                        category = AVAudioSessionCategoryPlayback,
                         withOptions = AVAudioSessionCategoryOptionMixWithOthers,
                         error = errorPtr.ptr
                     )
+
+                    // Activate the audio session
+                    audioSession.setActive(true, error = errorPtr.ptr)
                 }
 
                 // Generate WAV data

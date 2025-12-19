@@ -30,6 +30,7 @@ class CountdownTimer(
         onComplete: () -> Unit,
         resumeInstant: Instant = Clock.System.now()
     ) {
+        println("DEBUG CountdownTimer: start() called with durationSeconds=$durationSeconds")
         timerJob?.cancel()
         initialDurationSeconds = durationSeconds
         currentDurationSeconds = durationSeconds
@@ -41,6 +42,7 @@ class CountdownTimer(
         _isPaused.value = false
 
         startTimer()
+        println("DEBUG CountdownTimer: start() done, isPaused=${_isPaused.value}")
     }
 
     fun pause() {

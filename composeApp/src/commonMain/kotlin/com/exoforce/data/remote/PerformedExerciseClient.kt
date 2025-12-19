@@ -62,6 +62,9 @@ class PerformedExerciseClient(private val httpClient: HttpClient) {
         val id: String,
         @SerialName("user_id")
         val userId: String,
+        @SerialName("workout_id")
+        val workoutId: String,
+
         @SerialName("exercise_id")
         val exerciseId: String,
         @SerialName("started_at")

@@ -141,7 +141,7 @@ fun PerformedExerciseClient.CreatePerformedExerciseResponse.toDomain(): Performe
         id = id,
         userId = userId,
         exerciseId = exerciseId,
-        workoutId = "", // workout_id not returned in response
+        workoutId = workoutId,
         startedAt = startedAt,
         completedAt = completedAt,
         totalDurationSec = totalDurationSec,

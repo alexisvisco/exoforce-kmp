@@ -72,6 +72,16 @@ interface PerformedExerciseDao {
     @Transaction
     suspend fun getPerformedExercisesByWorkoutId(workoutId: String): List<PerformedExerciseWithRelations>
 
+    @Query("SELECT * FROM performed_exercises WHERE workout_id = :workoutId")
+    @Transaction
+    fun observePerformedExercisesByWorkoutId(workoutId: String): kotlinx.coroutines.flow.Flow<List<PerformedExerciseWithRelations>>
+
+    @Query("DELETE FROM performed_exercises")
+    suspend fun deleteAllPerformedExercises()
+
+    @Query("DELETE FROM performed_exercise_sets")
+    suspend fun deleteAllPerformedExerciseSets()
+
     @Upsert
     suspend fun upsertPerformedExercise(performedExercise: PerformedExerciseEntity)
 
@@ -90,6 +100,14 @@ class PerformedExerciseLocalDataSource(
 ) {
     suspend fun getPerformedExercisesByWorkoutId(workoutId: String): List<PerformedExerciseWithRelations> =
         performedExerciseDao.getPerformedExercisesByWorkoutId(workoutId)
+
+    fun observePerformedExercisesByWorkoutId(workoutId: String): kotlinx.coroutines.flow.Flow<List<PerformedExerciseWithRelations>> =
+        performedExerciseDao.observePerformedExercisesByWorkoutId(workoutId)
+
+    suspend fun cleanupAllPerformedExercises() {
+        performedExerciseDao.deleteAllPerformedExercises()
+        performedExerciseDao.deleteAllPerformedExerciseSets()
+    }
 
     suspend fun upsert(data: PerformedExerciseWithRelations) =
         performedExerciseDao.upsertPerformedExerciseWithRelations(data)
